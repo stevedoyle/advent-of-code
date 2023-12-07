@@ -2,15 +2,14 @@ use std::error::Error;
 use std::fs;
 
 fn calibration_sum(text: &str) -> u32 {
-    let values: Vec<u32> = text.lines().map(|line| extract_calib_value(line)).collect();
-    values.iter().sum()
+    text.lines().map(extract_calib_value).sum()
 }
 
 fn extract_calib_value(line: &str) -> u32 {
     let mut first_digit = None;
     let mut last_digit = None;
     for ch in line.chars() {
-        if !ch.is_digit(10) {
+        if !ch.is_ascii_digit() {
             continue;
         }
 
@@ -21,7 +20,7 @@ fn extract_calib_value(line: &str) -> u32 {
         }
         last_digit = Some(digit)
     }
-    (first_digit.unwrap() * 10) + last_digit.unwrap()
+    (first_digit.unwrap_or(0) * 10) + last_digit.unwrap_or(0)
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
