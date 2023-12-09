@@ -3,8 +3,8 @@ use std::{collections::HashSet, error::Error, fs, str::FromStr};
 
 #[derive(Debug)]
 struct Card {
-    winners: HashSet<u16>,
-    mine: HashSet<u16>,
+    winners: HashSet<u8>,
+    mine: HashSet<u8>,
     count: u32,
 }
 
@@ -35,14 +35,14 @@ impl FromStr for Card {
                     .unwrap()
                     .as_str()
                     .split_whitespace()
-                    .map(|x| x.parse::<u16>().unwrap())
+                    .map(|x| x.parse::<u8>().unwrap())
                     .collect(),
                 mine: captures
                     .get(3)
                     .unwrap()
                     .as_str()
                     .split_whitespace()
-                    .map(|x| x.parse::<u16>().unwrap())
+                    .map(|x| x.parse::<u8>().unwrap())
                     .collect(),
             };
             return Ok(card);
