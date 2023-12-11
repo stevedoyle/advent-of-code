@@ -113,10 +113,14 @@ pub mod part1 {
             });
 
             // Check for a full house (3 OAK + 2 OAK)
-            if counts.values().all(|&v| v == 2 || v == 3) {
-                self.kind = HandKind::FullHouse;
-                return;
+            if counts.len() == 2 {
+                let values: Vec<u8> = counts.values().copied().collect();
+                if values.contains(&2) && values.contains(&3) {
+                    self.kind = HandKind::FullHouse;
+                    return;
+                }
             }
+
             // Check for * of a kind
             match counts.values().max() {
                 Some(5) => {
@@ -320,7 +324,7 @@ pub mod part2 {
                     HandKind::TwoPair => HandKind::FullHouse,
                     HandKind::OnePair => HandKind::ThreeOAK,
                     HandKind::HighCard => HandKind::OnePair,
-                    _ => Default::default(),
+                    _ => panic!("Shouldn't get here! {kind:?}"),
                 },
                 2 => match kind {
                     HandKind::ThreeOAK => HandKind::FiveOAK,
@@ -339,13 +343,16 @@ pub mod part2 {
 
         fn classify_without_jokers(&mut self, cards: &[Card]) -> HandKind {
             let counts: HashMap<Card, u8> = cards.iter().fold(HashMap::new(), |mut map, c| {
-                *map.entry(c.clone()).or_insert(0) += 1;
+                *map.entry(*c).or_insert(0) += 1;
                 map
             });
 
             // Check for a full house (3 OAK + 2 OAK)
-            if counts.values().all(|&v| v == 2 || v == 3) {
-                return HandKind::FullHouse;
+            if counts.len() == 2 {
+                let values: Vec<u8> = counts.values().copied().collect();
+                if values.contains(&2) && values.contains(&3) {
+                    return HandKind::FullHouse;
+                }
             }
             // Check for * of a kind
             match counts.values().max() {
