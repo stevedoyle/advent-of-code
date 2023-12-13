@@ -172,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_sample_map_walk_p2() {
-        let input = get_input1();
+        let input = get_input2();
         let map = parse_input(&input);
         let steps = map.multi_walk();
         assert_eq!(steps, 6);
