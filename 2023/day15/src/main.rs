@@ -53,30 +53,20 @@ fn process(steps: &[String], boxes: &mut [LensBox]) {
 
 fn remove_operation(boxes: &mut [LensBox], op: &str) {
     let label = op.split_once('-').unwrap().0;
-    let box_id = hash(label);
-    let pos = boxes[box_id]
-        .lenses
-        .iter()
-        .position(|lens| lens.label == label);
-    if let Some(pos) = pos {
-        boxes[box_id].lenses.remove(pos);
-    }
+    boxes[hash(label)].lenses.retain(|lens| lens.label != label);
 }
 
 fn add_operation(boxes: &mut [LensBox], op: &str) {
     let (label, focal_length) = op.split_once('=').unwrap();
-    let focal_length = focal_length.parse::<u32>().unwrap();
-    let box_id = hash(label);
-    let lbox = &mut boxes[box_id];
-    let existing_lens = lbox.lenses.iter().position(|lens| lens.label == label);
-    if let Some(existing_lens) = existing_lens {
-        lbox.lenses[existing_lens].label = label.to_owned();
-        lbox.lenses[existing_lens].focal_length = focal_length;
+    let lens = Lens {
+        label: label.to_owned(),
+        focal_length: focal_length.parse::<u32>().unwrap(),
+    };
+    let lbox = &mut boxes[hash(label)];
+    if let Some(existing_lens) = lbox.lenses.iter().position(|lens| lens.label == label) {
+        lbox.lenses[existing_lens] = lens;
     } else {
-        lbox.lenses.push(Lens {
-            label: label.to_owned(),
-            focal_length,
-        });
+        lbox.lenses.push(lens);
     }
 }
 
