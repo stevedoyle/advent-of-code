@@ -1,6 +1,6 @@
 use anyhow::Result;
 use grid::Grid;
-use std::{collections::HashSet, fs};
+use std::collections::HashSet;
 
 fn parse_input(input: &str) -> Grid<char> {
     let mut grid = Grid::new(0, 0);
@@ -204,7 +204,8 @@ fn solve_p2(input: &str) -> usize {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("input.txt")?;
+    let input = include_str!("../input.txt");
+    // let input = fs::read_to_string("input.txt")?;
     let answer = solve_p1(&input);
     println!("Part 1: {answer}");
     let answer = solve_p2(&input);
@@ -305,7 +306,7 @@ mod tests {
 
     #[test]
     fn solve_with_real_input() {
-        let input = fs::read_to_string("input.txt").unwrap();
+        let input = include_str!("../input.txt");
         let answer = solve_p1(&input);
         assert_eq!(answer, 7996);
         let answer = solve_p2(&input);
