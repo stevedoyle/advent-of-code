@@ -42,16 +42,10 @@ fn horizontal_splitter(
             }
         }
         Direction::Up | Direction::Down => {
-            let a = if let Some(next_pos) = get_next_pos(grid, pos, Direction::Left) {
-                Some(Move(next_pos, Direction::Left))
-            } else {
-                None
-            };
-            let b = if let Some(next_pos) = get_next_pos(grid, pos, Direction::Right) {
-                Some(Move(next_pos, Direction::Right))
-            } else {
-                None
-            };
+            let a = get_next_pos(grid, pos, Direction::Left)
+                .map(|next_pos| Move(next_pos, Direction::Left));
+            let b = get_next_pos(grid, pos, Direction::Right)
+                .map(|next_pos| Move(next_pos, Direction::Right));
             (a, b)
         }
     }
@@ -76,16 +70,6 @@ fn vertical_splitter(
                 .map(|next_pos| Move(next_pos, Direction::Up));
             let b = get_next_pos(grid, pos, Direction::Down)
                 .map(|next_pos| Move(next_pos, Direction::Down));
-            // let a = if let Some(next_pos) = get_next_pos(grid, pos, Direction::Up) {
-            //     Some(Move(next_pos, Direction::Up))
-            // } else {
-            //     None
-            // };
-            // let b = if let Some(next_pos) = get_next_pos(grid, pos, Direction::Down) {
-            //     Some(Move(next_pos, Direction::Down))
-            // } else {
-            //     None
-            // };
             (a, b)
         }
     }
