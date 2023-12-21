@@ -1,4 +1,5 @@
 use core::fmt;
+use num::Integer;
 use std::{collections::HashMap, str::FromStr};
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
@@ -49,7 +50,6 @@ struct Module {
     conj_state: HashMap<String, Pulse>,
     flip_flop_state: FlipFlopState,
     count: Vec<usize>,
-    // high_count: usize,
 }
 
 impl FromStr for Module {
@@ -68,8 +68,6 @@ impl FromStr for Module {
                 conj_state: HashMap::new(),
                 flip_flop_state: FlipFlopState::Off,
                 count: vec![0, 0],
-                // low_count: 0,
-                // high_count: 0,
             },
 
             _ => match &name[0..1] {
@@ -333,8 +331,50 @@ fn solve_p1(input: &str) -> usize {
         .iter()
         .map(|(_, v)| v.count[Pulse::High as usize])
         .sum();
-    dbg!(low, high);
     low * high
+}
+
+fn solve_p2(input: &str) -> usize {
+    let mut iterations = 0;
+    let mut modules = parse_input(input);
+
+    setup(&mut modules);
+
+    let mut zhwatch: HashMap<String, usize> = HashMap::new();
+    let zh = modules.get("zh").unwrap();
+    zh.conj_state.iter().for_each(|(k, _)| {
+        zhwatch.insert(k.clone(), 0);
+    });
+
+    loop {
+        button_press(&mut modules);
+        iterations += 1;
+        if modules.get("rx").unwrap().count[Pulse::Low as usize] > 0 {
+            break;
+        }
+        let zh = modules.get("zh").unwrap();
+        zh.conj_state.iter().for_each(|(k, v)| {
+            if *v == Pulse::High {
+                let watcher = zhwatch.get_mut(k).unwrap();
+                if *watcher == 0 {
+                    *watcher = iterations;
+                    dbg!(&zhwatch);
+                }
+            }
+        });
+        if zhwatch.iter().all(|(_, v)| *v != 0) {
+            break;
+        }
+    }
+
+    if modules.get("rx").unwrap().count[Pulse::Low as usize] == 0 {
+        return zhwatch
+            .values()
+            .cloned()
+            .reduce(|acc, d| acc.lcm(&d))
+            .unwrap();
+    }
+    iterations
 }
 
 fn main() {
