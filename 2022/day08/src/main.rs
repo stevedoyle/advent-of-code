@@ -1,34 +1,30 @@
-use grid::Grid;
+use pathfinding::prelude::Matrix;
 
-fn parse_input(input: &str) -> Grid<u32> {
-    let mut grid = Grid::new(0, 0);
-
-    for line in input.lines() {
-        grid.push_row(
-            line.trim()
-                .chars()
-                .map(|c| c.to_digit(10).unwrap())
-                .collect(),
-        );
-    }
-    grid
+fn parse_input(input: &str) -> Matrix<u32> {
+    Matrix::from_rows(input.lines().map(|line| {
+        line.trim()
+            .chars()
+            .map(|c| c.to_digit(10).unwrap())
+            .collect::<Vec<u32>>()
+    }))
+    .unwrap()
 }
 
 fn solve_p1(input: &str) -> usize {
     let grid = parse_input(input);
-    let nrows = grid.rows();
-    let ncols = grid.cols();
+    let nrows = grid.rows;
+    let ncols = grid.columns;
 
-    let mut visible = Grid::new(nrows, ncols);
+    let mut visible = Matrix::new(nrows, ncols, 0);
 
     let mut count = (nrows * 2) + (ncols * 2) - 4;
 
     for row in 1..nrows - 1 {
         let mut max_from_left = grid[(row, 0)];
         for col in 1..ncols - 1 {
-            let curr = grid.get(row, col).unwrap();
-            if *curr > max_from_left {
-                max_from_left = *curr;
+            let curr = grid[(row, col)];
+            if curr > max_from_left {
+                max_from_left = curr;
                 visible[(row, col)] = 1;
                 count += 1;
             }
@@ -36,9 +32,9 @@ fn solve_p1(input: &str) -> usize {
 
         let mut max_from_right = grid[(row, ncols - 1)];
         for col in (1..ncols - 1).rev() {
-            let curr = grid.get(row, col).unwrap();
-            if *curr > max_from_right {
-                max_from_right = *curr;
+            let curr = grid[(row, col)];
+            if curr > max_from_right {
+                max_from_right = curr;
                 if visible[(row, col)] != 1 {
                     visible[(row, col)] = 1;
                     count += 1;
@@ -50,9 +46,9 @@ fn solve_p1(input: &str) -> usize {
     for col in 1..ncols - 1 {
         let mut max_from_top = grid[(0, col)];
         for row in 1..nrows - 1 {
-            let curr = grid.get(row, col).unwrap();
-            if *curr > max_from_top {
-                max_from_top = *curr;
+            let curr = grid[(row, col)];
+            if curr > max_from_top {
+                max_from_top = curr;
                 if visible[(row, col)] != 1 {
                     visible[(row, col)] = 1;
                     count += 1;
@@ -62,9 +58,9 @@ fn solve_p1(input: &str) -> usize {
 
         let mut max_from_bottom = grid[(nrows - 1, col)];
         for row in (1..nrows - 1).rev() {
-            let curr = grid.get(row, col).unwrap();
-            if *curr > max_from_bottom {
-                max_from_bottom = *curr;
+            let curr = grid[(row, col)];
+            if curr > max_from_bottom {
+                max_from_bottom = curr;
                 if visible[(row, col)] != 1 {
                     visible[(row, col)] = 1;
                     count += 1;
@@ -77,8 +73,8 @@ fn solve_p1(input: &str) -> usize {
 
 fn solve_p2(input: &str) -> usize {
     let grid = parse_input(input);
-    let nrows = grid.rows();
-    let ncols = grid.cols();
+    let nrows = grid.rows;
+    let ncols = grid.columns;
 
     let mut max_score = 0;
 
@@ -93,9 +89,9 @@ fn solve_p2(input: &str) -> usize {
     max_score
 }
 
-fn calc_score(grid: &Grid<u32>, (row, col): (usize, usize)) -> usize {
-    let nrows = grid.rows();
-    let ncols = grid.cols();
+fn calc_score(grid: &Matrix<u32>, (row, col): (usize, usize)) -> usize {
+    let nrows = grid.rows;
+    let ncols = grid.columns;
 
     let mut score = 0;
     let curr = grid[(row, col)];

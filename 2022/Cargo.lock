@@ -59,7 +59,7 @@ version = "0.1.0"
 name = "day08"
 version = "0.1.0"
 dependencies = [
- "grid",
+ "pathfinding",
 ]
 
 [[package]]
@@ -82,7 +82,6 @@ name = "day12"
 version = "0.1.0"
 dependencies = [
  "aoc_utils",
- "grid",
  "itertools",
  "pathfinding",
 ]
