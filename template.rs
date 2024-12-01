@@ -1,8 +1,14 @@
+fn parse_input(input: &str) -> Vec<i32> {
+    input.lines().map(|line| line.parse().unwrap()).collect()
+}
+
 fn solve_p1(input: &str) -> i32 {
+    let _data = parse_input(input);
     0
 }
 
 fn solve_p2(_input: &str) -> i32 {
+    let _data = parse_input(input);
     0
 }
 
