@@ -11,13 +11,11 @@ fn parse_input(input: &str) -> Vec<Vec<i32>> {
         .collect()
 }
 
-fn solve_p1(input: &str) -> i32 {
-    let reports = parse_input(input);
+fn solve_p1(reports: &[Vec<i32>]) -> i32 {
     reports.iter().filter(|report| is_safe(report)).count() as i32
 }
 
-fn solve_p2(input: &str) -> i32 {
-    let reports = parse_input(input);
+fn solve_p2(reports: &[Vec<i32>]) -> i32 {
     reports
         .iter()
         .filter(|report| is_safe_with_dampener(report))
@@ -60,13 +58,14 @@ fn is_safe_with_dampener(report: &[i32]) -> bool {
 
 fn main() {
     let input = include_str!("../input.txt");
+    let reports = parse_input(input);
 
     let before = Instant::now();
-    let answer = solve_p1(input);
+    let answer = solve_p1(&reports);
     println!("Part 1: {answer}, elapsed: {:.2?}", before.elapsed());
 
     let before = Instant::now();
-    let answer = solve_p2(input);
+    let answer = solve_p2(&reports);
     println!("Part 2: {answer}, elapsed: {:.2?}", before.elapsed());
 }
 
@@ -83,9 +82,10 @@ mod tests {
 
     #[test]
     fn test_solve_with_test_input() {
-        let answer = solve_p1(INPUT);
+        let reports = parse_input(INPUT);
+        let answer = solve_p1(&reports);
         assert_eq!(answer, 2);
-        let answer = solve_p2(INPUT);
+        let answer = solve_p2(&reports);
         assert_eq!(answer, 4);
     }
 }
