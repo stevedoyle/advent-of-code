@@ -4,11 +4,10 @@ fn parse_input(input: &str) -> Matrix<char> {
     Matrix::from_rows(input.lines().map(|line| line.chars().collect::<Vec<_>>())).unwrap()
 }
 
-fn count_xmas(data: &Matrix<char>, start: (usize, usize)) -> i32 {
+fn count_xmas(data: &Matrix<char>, start: (usize, usize)) -> usize {
     let mut count = 0;
 
     let target = "XMAS".chars().collect::<Vec<_>>();
-    let tlen = target.len();
     let (row, col) = start;
 
     let directions = vec![
@@ -24,14 +23,14 @@ fn count_xmas(data: &Matrix<char>, start: (usize, usize)) -> i32 {
 
     for dir in directions {
         let mut found = true;
-        for i in 0..tlen {
+        for (i, &item) in target.iter().enumerate() {
             let r = row as i32 + dir.0 * i as i32;
             let c = col as i32 + dir.1 * i as i32;
             if r < 0 || r >= data.rows as i32 || c < 0 || c >= data.columns as i32 {
                 found = false;
                 break;
             }
-            if data[(r as usize, c as usize)] != target[i] {
+            if data[(r as usize, c as usize)] != item {
                 found = false;
                 break;
             }
@@ -67,32 +66,19 @@ fn is_x_mas(data: &Matrix<char>, start: (usize, usize)) -> bool {
     target == a && target == b
 }
 
-fn solve_p1(input: &str) -> i32 {
+fn solve_p1(input: &str) -> usize {
     let data = parse_input(input);
-    let mut count = 0;
-    for row in 0..data.rows {
-        for col in 0..data.columns {
-            if data[(row, col)] == 'X' {
-                count += count_xmas(&data, (row, col))
-            }
-        }
-    }
-    count
+    data.items()
+        .filter(|(_, &ch)| ch == 'X')
+        .map(|(pos, _)| count_xmas(&data, pos))
+        .sum()
 }
 
-fn solve_p2(input: &str) -> i32 {
+fn solve_p2(input: &str) -> usize {
     let data = parse_input(input);
-    let mut count = 0;
-    for row in 0..data.rows {
-        for col in 0..data.columns {
-            if data[(row, col)] == 'A' {
-                if is_x_mas(&data, (row, col)) {
-                    count += 1;
-                }
-            }
-        }
-    }
-    count
+    data.items()
+        .filter(|((r, c), &ch)| ch == 'A' && is_x_mas(&data, (*r, *c)))
+        .count()
 }
 
 fn main() {
