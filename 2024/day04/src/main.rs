@@ -66,27 +66,32 @@ fn is_x_mas(data: &Matrix<char>, start: (usize, usize)) -> bool {
     target == a && target == b
 }
 
-fn solve_p1(input: &str) -> usize {
-    let data = parse_input(input);
+fn solve_p1(data: &Matrix<char>) -> usize {
     data.items()
         .filter(|(_, &ch)| ch == 'X')
-        .map(|(pos, _)| count_xmas(&data, pos))
+        .map(|(pos, _)| count_xmas(data, pos))
         .sum()
 }
 
-fn solve_p2(input: &str) -> usize {
-    let data = parse_input(input);
+fn solve_p2(data: &Matrix<char>) -> usize {
     data.items()
-        .filter(|((r, c), &ch)| ch == 'A' && is_x_mas(&data, (*r, *c)))
+        .filter(|((r, c), &ch)| ch == 'A' && is_x_mas(data, (*r, *c)))
         .count()
 }
 
 fn main() {
     let input = include_str!("../input.txt");
-    let answer = solve_p1(input);
-    println!("Part 1: {answer}");
-    let answer = solve_p2(input);
-    println!("Part 2: {answer}");
+    let data = parse_input(input);
+
+    let start = std::time::Instant::now();
+    let answer = solve_p1(&data);
+    let elapsed = start.elapsed();
+    println!("Part 1: {answer}, elapsed time: {elapsed:.2?}");
+
+    let start = std::time::Instant::now();
+    let answer = solve_p2(&data);
+    let elapsed = start.elapsed();
+    println!("Part 2: {answer}, elapsed time: {elapsed:.2?}");
 }
 
 #[cfg(test)]
@@ -106,9 +111,10 @@ MXMXAXMASX";
 
     #[test]
     fn test_solve_with_test_input() {
-        let answer = solve_p1(INPUT);
+        let data = parse_input(INPUT);
+        let answer = solve_p1(&data);
         assert_eq!(answer, 18);
-        let answer = solve_p2(INPUT);
+        let answer = solve_p2(&data);
         assert_eq!(answer, 9);
     }
 }
