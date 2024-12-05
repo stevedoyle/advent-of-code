@@ -17,49 +17,39 @@ fn parse_input(input: &str) -> (HashMap<usize, Vec<usize>>, Vec<Vec<usize>>) {
     (rules, updates)
 }
 
-fn is_in_order(rules: &HashMap<usize, Vec<usize>>, update: &[usize]) -> bool {
-    for (i, page) in update.iter().enumerate() {
-        for next_page in update.iter().skip(i + 1) {
-            match rules.get(page) {
-                None => return false,
-                Some(v) => {
-                    if !v.contains(next_page) {
-                        return false;
-                    }
-                }
+fn sort_by_rules(rules: &HashMap<usize, Vec<usize>>, data: &mut [usize]) {
+    data.sort_by(|a, b| match rules.get(a) {
+        None => std::cmp::Ordering::Greater,
+        Some(v) => {
+            if v.contains(b) {
+                std::cmp::Ordering::Less
+            } else {
+                std::cmp::Ordering::Greater
             }
         }
-    }
-    true
+    });
 }
 
 fn solve_p1(rules: &HashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> usize {
-    let correct_updates = updates
-        .iter()
-        .filter(|u: &&Vec<usize>| is_in_order(rules, u))
-        .collect::<Vec<_>>();
-    correct_updates.iter().map(|u| u[u.len() / 2]).sum()
+    let mut in_order = Vec::new();
+    for item in updates {
+        let mut adjusted = item.clone();
+        sort_by_rules(rules, &mut adjusted);
+        if *item == adjusted {
+            in_order.push(adjusted);
+        }
+    }
+    in_order.iter().map(|u| u[u.len() / 2]).sum()
 }
 
 fn solve_p2(rules: &HashMap<usize, Vec<usize>>, updates: &[Vec<usize>]) -> usize {
-    let unordered = updates
-        .iter()
-        .filter(|u: &&Vec<usize>| !is_in_order(rules, u))
-        .collect::<Vec<_>>();
     let mut reordered = Vec::new();
-    for item in unordered {
-        let mut item = item.clone();
-        item.sort_by(|a, b| match rules.get(a) {
-            None => std::cmp::Ordering::Greater,
-            Some(v) => {
-                if v.contains(b) {
-                    std::cmp::Ordering::Less
-                } else {
-                    std::cmp::Ordering::Greater
-                }
-            }
-        });
-        reordered.push(item);
+    for item in updates {
+        let mut adjusted = item.clone();
+        sort_by_rules(rules, &mut adjusted);
+        if *item != adjusted {
+            reordered.push(adjusted);
+        }
     }
     reordered.iter().map(|u| u[u.len() / 2]).sum()
 }
