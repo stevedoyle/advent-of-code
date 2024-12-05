@@ -5,10 +5,11 @@ fn parse_input(input: &str) -> (HashMap<usize, Vec<usize>>, Vec<Vec<usize>>) {
 
     let (rule_input, page_input) = input.split_once("\n\n").unwrap();
     for line in rule_input.lines() {
-        let (key, value) = line.split_once("|").unwrap();
-        let key = key.parse().unwrap();
-        let value = value.parse().unwrap();
-        rules.entry(key).or_insert(vec![]).push(value);
+        if let Some((key, value)) = line.split_once("|") {
+            let key = key.parse().unwrap();
+            let value = value.parse().unwrap();
+            rules.entry(key).or_insert(vec![]).push(value);
+        }
     }
     let updates = page_input
         .lines()
