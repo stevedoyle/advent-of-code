@@ -7,17 +7,23 @@ fn solve_p1(input: &str) -> i32 {
     0
 }
 
-fn solve_p2(_input: &str) -> i32 {
+fn solve_p2(input: &str) -> i32 {
     let _data = parse_input(input);
     0
 }
 
 fn main() {
     let input = include_str!("../input.txt");
+
+    let start = std::time::Instant::now();
     let answer = solve_p1(input);
-    println!("Part 1: {answer}");
+    let elapsed = start.elapsed();
+    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
+
+    let start = std::time::Instant::now();
     let answer = solve_p2(input);
-    println!("Part 2: {answer}");
+    let elapsed = start.elapsed();
+    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
 }
 
 #[cfg(test)]
