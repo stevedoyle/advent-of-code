@@ -31,8 +31,9 @@ fn is_solvable(goal: usize, operands: &[usize], p2: bool) -> bool {
         return operands[0] == goal;
     }
 
-    let head = operands[0];
-    let tail = &operands[1..];
+    let n = operands.len();
+    let head = operands[n - 1];
+    let tail = &operands[..n - 1];
     if goal > head {
         let subgoal1 = goal - head;
         if is_solvable(subgoal1, tail, p2) {
@@ -44,7 +45,7 @@ fn is_solvable(goal: usize, operands: &[usize], p2: bool) -> bool {
     if subgoal2 * head == goal && is_solvable(subgoal2, tail, p2) {
         return true;
     }
-    if p2 {
+    if p2 && goal > head {
         let mut h = head;
         let mut mul = 1;
         while h > 0 {
@@ -65,7 +66,7 @@ fn solve_p1(equations: &[Equation]) -> usize {
         .filter(|eq| {
             is_solvable(
                 eq.target,
-                &eq.operands.iter().rev().copied().collect::<Vec<_>>(),
+                &eq.operands,
                 false,
             )
         })
@@ -79,7 +80,7 @@ fn solve_p2(equations: &[Equation]) -> usize {
         .filter(|eq| {
             is_solvable(
                 eq.target,
-                &eq.operands.iter().rev().copied().collect::<Vec<_>>(),
+                &eq.operands,
                 true,
             )
         })
