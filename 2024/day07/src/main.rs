@@ -22,89 +22,69 @@ impl FromStr for Equation {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Operator {
-    Add,
-    Multiply,
-    Concatenate,
-}
-
 fn parse_input(input: &str) -> Vec<Equation> {
     input.lines().map(|line| line.parse().unwrap()).collect()
 }
 
-fn generate_combinations(n: usize, ops: &[Operator]) -> Vec<Vec<Operator>> {
-    fn backtrack(
-        n: usize,
-        ops: &[Operator],
-        current: &mut Vec<Operator>,
-        results: &mut Vec<Vec<Operator>>,
-    ) {
-        if current.len() == n {
-            results.push(current.clone());
-            return;
-        }
+fn is_solvable(goal: usize, operands: &[usize], p2: bool) -> bool {
+    if operands.len() == 1 {
+        return operands[0] == goal;
+    }
 
-        for &op in ops {
-            current.push(op);
-            backtrack(n, ops, current, results);
-            current.pop();
+    let head = operands[0];
+    let tail = &operands[1..];
+    if goal > head {
+        let subgoal1 = goal - head;
+        if is_solvable(subgoal1, tail, p2) {
+            return true;
         }
     }
 
-    let mut results = Vec::new();
-    backtrack(n, ops, &mut Vec::new(), &mut results);
-    results
-}
-
-fn concatenate(a: usize, b: usize) -> usize {
-    let mut multiplier = 1;
-
-    while multiplier < b {
-        multiplier *= 10;
+    let subgoal2 = goal / head;
+    if subgoal2 * head == goal && is_solvable(subgoal2, tail, p2) {
+        return true;
     }
-
-    a * multiplier + b
-}
-
-fn is_solvable(eq: &Equation, ops: &[Operator]) -> bool {
-    let num_operators = eq.operands.len() - 1;
-    if num_operators == 0 {
-        return eq.operands[0] == eq.target;
-    }
-    let operator_combinations = generate_combinations(num_operators, ops);
-    for combo in operator_combinations {
-        let mut result = eq.operands[0];
-        for (i, &op) in combo.iter().enumerate() {
-            match op {
-                Operator::Add => result += eq.operands[i + 1],
-                Operator::Multiply => result *= eq.operands[i + 1],
-                Operator::Concatenate => result = concatenate(result, eq.operands[i + 1]),
-            }
+    if p2 {
+        let mut h = head;
+        let mut mul = 1;
+        while h > 0 {
+            h /= 10;
+            mul *= 10;
         }
-        if result == eq.target {
+        let subgoal3 = (goal - head) / mul;
+        if subgoal3 * mul + head == goal && is_solvable(subgoal3, tail, p2) {
             return true;
         }
     }
     false
 }
 
-fn solve(equations: &[Equation], ops: &[Operator]) -> usize {
+fn solve_p1(equations: &[Equation]) -> usize {
     equations
         .iter()
-        .filter(|eq| is_solvable(eq, ops))
+        .filter(|eq| {
+            is_solvable(
+                eq.target,
+                &eq.operands.iter().rev().copied().collect::<Vec<_>>(),
+                false,
+            )
+        })
         .map(|eq| eq.target)
         .sum()
 }
 
-fn solve_p1(equations: &[Equation]) -> usize {
-    let operators = [Operator::Add, Operator::Multiply];
-    solve(equations, &operators)
-}
-
 fn solve_p2(equations: &[Equation]) -> usize {
-    let operators = [Operator::Add, Operator::Multiply, Operator::Concatenate];
-    solve(equations, &operators)
+    equations
+        .iter()
+        .filter(|eq| {
+            is_solvable(
+                eq.target,
+                &eq.operands.iter().rev().copied().collect::<Vec<_>>(),
+                true,
+            )
+        })
+        .map(|eq| eq.target)
+        .sum()
 }
 
 fn main() {
@@ -135,13 +115,5 @@ mod tests {
         assert_eq!(answer, 3749);
         let answer = solve_p2(&equations);
         assert_eq!(answer, 11387);
-    }
-
-    #[test]
-    fn test_concatenate() {
-        assert_eq!(concatenate(1, 2), 12);
-        assert_eq!(concatenate(12, 3), 123);
-        assert_eq!(concatenate(123, 4), 1234);
-        assert_eq!(concatenate(12, 34), 1234);
     }
 }
