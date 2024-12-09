@@ -40,6 +40,16 @@ impl Block {
     fn len(&self) -> usize {
         self.end - self.start
     }
+
+    fn checksum(&self, pos: usize) -> usize {
+        if self.blk_type.is_data() {
+            (0..self.len())
+                .map(|i| (pos + i) * self.blk_type.get_data() as usize)
+                .sum()
+        } else {
+            0
+        }
+    }
 }
 
 fn parse_block_input(input: &str) -> Vec<Block> {
@@ -91,7 +101,7 @@ fn display_blocks(blocks: &[Block]) {
     println!();
 }
 
-fn solve_p1(input: &str) -> isize {
+fn solve_p1(input: &str) -> usize {
     let data = parse_input(input);
     let mut decoded: Vec<isize> = Vec::new();
     let mut id = 0;
@@ -124,10 +134,10 @@ fn solve_p1(input: &str) -> isize {
         fwd_idx += 1;
         rev_idx -= 1;
     }
-    checksum
+    checksum as usize
 }
 
-fn solve_p2(input: &str) -> isize {
+fn solve_p2(input: &str) -> usize {
     let mut blocks = parse_block_input(input);
 
     let mut blk_idx = blocks.len() - 1;
@@ -171,16 +181,10 @@ fn solve_p2(input: &str) -> isize {
     }
 
     let mut checksum = 0;
-    let mut pos: isize = 0;
+    let mut pos: usize = 0;
     blocks.iter().for_each(|blk| {
-        if blk.blk_type.is_data() {
-            (0..blk.len()).for_each(|_| {
-                checksum += pos * blk.blk_type.get_data() as isize;
-                pos += 1;
-            });
-        } else {
-            pos += blk.len() as isize;
-        }
+        checksum += blk.checksum(pos);
+        pos += blk.len();
     });
     checksum
 }
