@@ -52,8 +52,7 @@ fn find_all_paths(map: &Matrix<u32>, start: (usize, usize)) -> Vec<Vec<(usize, u
     paths
 }
 
-fn solve_p1(input: &str) -> usize {
-    let map = parse_input(input);
+fn solve_p1(map: &Matrix<u32>) -> usize {
     let zeros = map
         .items()
         .filter(|(_, &val)| val == 0)
@@ -68,8 +67,7 @@ fn solve_p1(input: &str) -> usize {
     trail_count
 }
 
-fn solve_p2(input: &str) -> usize {
-    let map = parse_input(input);
+fn solve_p2(map: &Matrix<u32>) -> usize {
     let zeros = map
         .items()
         .filter(|(_, &val)| val == 0)
@@ -85,15 +83,16 @@ fn solve_p2(input: &str) -> usize {
 }
 
 fn main() {
-    let input = include_str!("../input.txt");
+    let input = std::fs::read_to_string("input.txt").unwrap();
+    let map = parse_input(&input);
 
     let start = std::time::Instant::now();
-    let answer = solve_p1(input);
+    let answer = solve_p1(&map);
     let elapsed = start.elapsed();
     println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
 
     let start = std::time::Instant::now();
-    let answer = solve_p2(input);
+    let answer = solve_p2(&map);
     let elapsed = start.elapsed();
     println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
 }
@@ -105,9 +104,10 @@ mod tests {
     #[test]
     fn test_solve_with_test_input() {
         let input = std::fs::read_to_string("test.txt").unwrap();
-        let answer = solve_p1(&input);
+        let map = parse_input(&input);
+        let answer = solve_p1(&map);
         assert_eq!(answer, 36);
-        let answer = solve_p2(&input);
+        let answer = solve_p2(&map);
         assert_eq!(answer, 81);
     }
 }
