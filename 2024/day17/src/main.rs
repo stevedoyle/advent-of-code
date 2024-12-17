@@ -34,7 +34,7 @@ impl Computer {
                 }
                 Opcode::Bst => {
                     let operand = self.combo(instr.operand);
-                    self.b = operand as usize % 8;
+                    self.b = operand % 8;
                     self.pc += 1;
                 }
                 Opcode::Jnz => {
@@ -50,7 +50,7 @@ impl Computer {
                 }
                 Opcode::Out => {
                     let operand = self.combo(instr.operand);
-                    if output.len() > 0 {
+                    if !output.is_empty() {
                         output.push(',');
                     }
                     output.push_str((operand % 8).to_string().as_str());
@@ -67,7 +67,6 @@ impl Computer {
                     self.pc += 1;
                 }
             }
-            // println!(" [a={} b={} c={}]", self.a, self.b, self.c);
         }
         output
     }
@@ -85,13 +84,13 @@ impl Computer {
 
 impl fmt::Display for Computer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
+        writeln!(
             f,
-            "Computer {{ a: {}, b: {}, c: {}, pc: {} }}\n",
+            "Computer {{ a: {}, b: {}, c: {}, pc: {} }}",
             self.a, self.b, self.c, self.pc
         )?;
         for instr in &self.instructions {
-            write!(f, "{}\n", instr)?;
+            writeln!(f, "{}", instr)?;
         }
         Ok(())
     }
@@ -192,8 +191,7 @@ fn parse_input(input: &str) -> Computer {
 fn parse_program(input: &str) -> String {
     input
         .lines()
-        .skip(4)
-        .next()
+        .nth(4)
         .unwrap()
         .split_once(" ")
         .unwrap()
