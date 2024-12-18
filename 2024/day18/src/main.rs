@@ -47,17 +47,19 @@ fn solve_p2(input: &str, bound: usize, start_check: usize) -> (usize, usize) {
         matrix[(*y, *x)] = '#';
     }
 
+    let pos = (0, 0);
+    let goal = (bound, bound);
+
     for (x, y) in &data[start_check..] {
         matrix[(*y, *x)] = '#';
-        let pos = (0, 0);
-        let goal = (bound, bound);
-        let path = astar(
+        if astar(
             &pos,
             |p| successors(&matrix, *p),
             |p| distance(p, &goal),
             |p| *p == goal,
-        );
-        if path.is_none() {
+        )
+        .is_none()
+        {
             return (*x, *y);
         }
     }
