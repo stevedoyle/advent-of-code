@@ -1,29 +1,26 @@
 use std::collections::HashMap;
 
+#[cfg(windows)]
+const DOUBLE_NEWLINE: &str = "\r\n\r\n";
+#[cfg(not(windows))]
+const DOUBLE_NEWLINE: &str = "\n\n";
+
 fn parse_input(input: &str) -> (Vec<String>, Vec<String>) {
-    let (towel_input, design_input) = input.split_once("\n\n").unwrap();
+    let (towel_input, design_input) = input.split_once(DOUBLE_NEWLINE).unwrap();
     let towels = towel_input.split(", ").map(|s| s.to_string()).collect();
     let designs = design_input.lines().map(|s| s.to_string()).collect();
     (towels, designs)
 }
 
-fn is_valid_design(towels: &[String], design: &str) -> bool {
-    let mut stack = Vec::new();
-    stack.push(design);
-
-    while let Some(current_design) = stack.pop() {
-        for towel in towels {
-            if current_design.starts_with(towel) {
-                let remaining_design = &current_design[towel.len()..];
-                if remaining_design.is_empty() {
-                    return true;
-                }
-                stack.push(remaining_design);
-            }
-        }
+fn is_valid_design_recursive(towels: &[String], design: &str) -> bool {
+    if design.is_empty() {
+        return true;
     }
 
-    false
+    towels.iter().filter(|t| design.starts_with(*t)).any(|t| {
+        let remaining_design = &design[t.len()..];
+        is_valid_design_recursive(towels, remaining_design)
+    })
 }
 
 fn count_ways(towels: &[String], design: &str, cache: &mut HashMap<String, usize>) -> usize {
@@ -47,7 +44,7 @@ fn count_ways(towels: &[String], design: &str, cache: &mut HashMap<String, usize
 fn solve_p1(towels: &[String], designs: &[String]) -> usize {
     designs
         .iter()
-        .filter(|d| is_valid_design(towels, d))
+        .filter(|d| is_valid_design_recursive(towels, d))
         .count()
 }
 
