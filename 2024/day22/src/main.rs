@@ -17,15 +17,14 @@ fn generate_one_secret(initial_secret: usize) -> usize {
 }
 
 fn generate_secret(initial_secret: usize, iterations: usize) -> usize {
-    let mut secret = initial_secret;
-    (0..iterations).for_each(|_| secret = generate_one_secret(secret));
-    secret
+    (0..iterations).fold(initial_secret, |secret, _| generate_one_secret(secret))
 }
 
 fn ones_digit(value: usize) -> usize {
     value % 10
 }
 
+// Returns the banana count for each sequence
 fn generate_sequences(
     banana_count: &mut HashMap<(isize, isize, isize, isize), usize>,
     initial_secret: usize,
@@ -50,6 +49,7 @@ fn generate_sequences(
         );
         let value = window[4];
 
+        // We only care about the first time we see this sequence
         local_cache.entry(key).or_insert_with(|| {
             *banana_count.entry(key).or_insert(0) += value;
             value
