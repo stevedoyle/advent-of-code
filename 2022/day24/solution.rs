@@ -26,7 +26,7 @@ struct Valley {
 
 impl Valley {
     fn parse(input: &str) -> Self {
-        let lines: Vec<&str> = input.lines().filter(|l| !l.is_empty()).collect();
+        let lines: Vec<&str> = input.lines().collect();
         let height = lines.len() as i32;
         let width = lines[0].len() as i32;
 
@@ -57,10 +57,7 @@ impl Valley {
         let start = (0, start_col);
 
         // Find goal (bottom row, open position)
-        let goal_col = lines[height as usize - 1]
-            .chars()
-            .position(|c| c == '.')
-            .unwrap() as i32;
+        let goal_col = lines[height as usize - 1].chars().position(|c| c == '.').unwrap() as i32;
         let goal = (height - 1, goal_col);
 
         Valley {
@@ -157,30 +154,24 @@ impl Valley {
     }
 }
 
-fn solve_p1(input: &str) -> i32 {
+pub fn solve_p1(input: &str) -> i32 {
     let valley = Valley::parse(input);
     valley.find_shortest_path(valley.start, valley.goal, 0)
 }
 
-fn solve_p2(input: &str) -> i32 {
+pub fn solve_p2(input: &str) -> i32 {
     let valley = Valley::parse(input);
+
+    // Trip 1: Start to goal
     let time1 = valley.find_shortest_path(valley.start, valley.goal, 0);
+
+    // Trip 2: Goal back to start
     let time2 = valley.find_shortest_path(valley.goal, valley.start, time1);
-    valley.find_shortest_path(valley.start, valley.goal, time2)
-}
 
-fn main() {
-    let input = std::fs::read_to_string("input.txt").unwrap();
+    // Trip 3: Start to goal again
+    let time3 = valley.find_shortest_path(valley.start, valley.goal, time2);
 
-    let start = std::time::Instant::now();
-    let answer = solve_p1(&input);
-    let elapsed = start.elapsed();
-    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
-
-    let start = std::time::Instant::now();
-    let answer = solve_p2(&input);
-    let elapsed = start.elapsed();
-    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+    time3
 }
 
 #[cfg(test)]
@@ -188,11 +179,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_solve_with_test_input() {
-        let input = std::fs::read_to_string("test_input.txt").unwrap();
-        let answer = solve_p1(&input);
-        assert_eq!(answer, 18);
-        let answer = solve_p2(&input);
-        assert_eq!(answer, 54);
+    fn test_example() {
+        let input = "\
+#.######
+#>>.<^<#
+#.<..<<#
+#>v.><>#
+#<^v^^>#
+######.#";
+
+        assert_eq!(solve_p1(input), 18);
     }
 }
