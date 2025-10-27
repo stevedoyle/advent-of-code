@@ -1,5 +1,17 @@
 use std::collections::{HashSet, VecDeque};
 
+fn gcd(a: i32, b: i32) -> i32 {
+    if b == 0 {
+        a
+    } else {
+        gcd(b, a % b)
+    }
+}
+
+fn lcm(a: i32, b: i32) -> i32 {
+    (a * b) / gcd(a, b)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Direction {
     Up,
@@ -22,6 +34,8 @@ struct Valley {
     blizzards: Vec<Blizzard>,
     start: (i32, i32),
     goal: (i32, i32),
+    blizzard_cache: Vec<HashSet<(i32, i32)>>,
+    cycle_length: i32,
 }
 
 impl Valley {
@@ -63,16 +77,31 @@ impl Valley {
             .unwrap() as i32;
         let goal = (height - 1, goal_col);
 
-        Valley {
+        // Blizzards cycle with period = LCM of inner dimensions
+        let inner_width = width - 2;
+        let inner_height = height - 2;
+        let cycle_length = lcm(inner_width, inner_height);
+
+        let mut valley = Valley {
             width,
             height,
             blizzards,
             start,
             goal,
-        }
+            blizzard_cache: Vec::new(),
+            cycle_length,
+        };
+
+        // Pre-compute blizzard positions for each time in the cycle
+        valley.blizzard_cache = (0..cycle_length)
+            .map(|t| valley.compute_blizzards_at_time(t))
+            .collect();
+
+        valley
     }
 
-    fn has_blizzard_at(&self, row: i32, col: i32, time: i32) -> bool {
+    fn compute_blizzards_at_time(&self, time: i32) -> HashSet<(i32, i32)> {
+        let mut positions = HashSet::new();
         for blizzard in &self.blizzards {
             let (new_row, new_col) = match blizzard.dir {
                 Direction::Up => {
@@ -100,12 +129,14 @@ impl Valley {
                     (blizzard.row, new_col)
                 }
             };
-
-            if new_row == row && new_col == col {
-                return true;
-            }
+            positions.insert((new_row, new_col));
         }
-        false
+        positions
+    }
+
+    fn has_blizzard_at(&self, row: i32, col: i32, time: i32) -> bool {
+        let cycle_time = time % self.cycle_length;
+        self.blizzard_cache[cycle_time as usize].contains(&(row, col))
     }
 
     fn is_valid_position(&self, row: i32, col: i32, time: i32) -> bool {
@@ -128,7 +159,7 @@ impl Valley {
         let mut visited = HashSet::new();
 
         queue.push_back((start.0, start.1, start_time));
-        visited.insert((start.0, start.1, start_time));
+        visited.insert((start.0, start.1, start_time % self.cycle_length));
 
         let moves = [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)]; // wait, right, left, down, up
 
@@ -144,10 +175,10 @@ impl Valley {
                 let new_col = col + dc;
 
                 if self.is_valid_position(new_row, new_col, next_time) {
-                    let state = (new_row, new_col, next_time);
+                    let state = (new_row, new_col, next_time % self.cycle_length);
                     if !visited.contains(&state) {
                         visited.insert(state);
-                        queue.push_back(state);
+                        queue.push_back((new_row, new_col, next_time));
                     }
                 }
             }
