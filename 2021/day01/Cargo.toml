@@ -1,0 +1,11 @@
+[package]
+name = "day01"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+# You can add day-specific dependencies here
+# or use workspace dependencies like:
+# regex.workspace = true
+# itertools.workspace = true
+# anyhow.workspace = true

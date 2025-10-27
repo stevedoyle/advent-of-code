@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "day01",
+    # Add future day directories here as you create them
+    # "day02",
+    # "day03",
+    # etc.
+]
+
+# Shared dependencies across all workspace members
+[workspace.dependencies]
+# Common dependencies for Advent of Code problems
+regex = "1.10"
+itertools = "0.12"
+anyhow = "1.0"
+
+# Shared configuration for all workspace members
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Your Name <your.email@example.com>"]
