@@ -47,70 +47,64 @@ fn beyond_target_area(pos: (i32, i32), target: &TargetArea) -> bool {
     pos.0 > target.xmax || pos.1 < target.ymin
 }
 
-fn solve_p1(input: &str) -> i32 {
-    let target = parse_input(input);
-    let start = (0, 0);
-    let mut highest_y = 0;
+fn simulate_trajectory(vx: i32, vy: i32, target: &TargetArea) -> Option<i32> {
+    let mut pos = (0, 0);
+    let mut max_y = 0;
+    let mut vx_sim = vx;
+    let mut vy_sim = vy;
+
+    while pos.0 <= target.xmax && pos.1 >= target.ymin {
+        pos.0 += vx_sim;
+        pos.1 += vy_sim;
+        max_y = max_y.max(pos.1);
+
+        if in_target_area(pos, target) {
+            return Some(max_y);
+        }
+
+        if beyond_target_area(pos, target) {
+            break;
+        }
+
+        vx_sim = (vx_sim - 1).max(0);
+        vy_sim -= 1;
+    }
+
+    None
+}
+
+fn find_valid_trajectories(target: &TargetArea) -> Vec<(i32, i32, i32)> {
+    let mut results = Vec::new();
     // Upper bound for vy: when probe returns to y=0, velocity is -vy
     // Next step will be at y = -(vy + 1), which must be >= ymin
     // So vy <= -ymin - 1
     let max_vy = -target.ymin - 1;
+
     for vx in 1..=target.xmax {
         for vy in target.ymin..=max_vy {
-            let mut pos = start;
-            let mut max_y = 0;
-            let mut vx_sim = vx;
-            let mut vy_sim = vy;
-            while pos.0 <= target.xmax && pos.1 >= target.ymin {
-                pos.0 += vx_sim;
-                pos.1 += vy_sim;
-                max_y = max_y.max(pos.1);
-                if in_target_area(pos, &target) {
-                    highest_y = highest_y.max(max_y);
-                    break;
-                }
-                if beyond_target_area(pos, &target) {
-                    break;
-                }
-                vx_sim = (vx_sim - 1).max(0);
-                vy_sim -= 1;
+            if let Some(max_y) = simulate_trajectory(vx, vy, target) {
+                results.push((vx, vy, max_y));
             }
         }
     }
-    highest_y
+
+    results
+}
+
+fn solve_p1(input: &str) -> i32 {
+    let target = parse_input(input);
+    let trajectories = find_valid_trajectories(&target);
+    trajectories
+        .iter()
+        .map(|(_, _, max_y)| *max_y)
+        .max()
+        .unwrap_or(0)
 }
 
 fn solve_p2(input: &str) -> usize {
     let target = parse_input(input);
-    let start = (0, 0);
-    let mut hits = 0;
-    // Upper bound for vy: when probe returns to y=0, velocity is -vy
-    // Next step will be at y = -(vy + 1), which must be >= ymin
-    // So vy <= -ymin - 1
-    let max_vy = -target.ymin - 1;
-    for vx in 1..=target.xmax {
-        for vy in target.ymin..=max_vy {
-            let mut pos = start;
-            let mut max_y = 0;
-            let mut vx_sim = vx;
-            let mut vy_sim = vy;
-            while pos.0 <= target.xmax && pos.1 >= target.ymin {
-                pos.0 += vx_sim;
-                pos.1 += vy_sim;
-                max_y = max_y.max(pos.1);
-                if in_target_area(pos, &target) {
-                    hits += 1;
-                    break;
-                }
-                if beyond_target_area(pos, &target) {
-                    break;
-                }
-                vx_sim = (vx_sim - 1).max(0);
-                vy_sim -= 1;
-            }
-        }
-    }
-    hits
+    let trajectories = find_valid_trajectories(&target);
+    trajectories.len()
 }
 
 fn main() {
