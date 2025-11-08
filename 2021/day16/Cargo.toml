@@ -1,0 +1,8 @@
+[package]
+name = "day16"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+hex = "0.4.3"
