@@ -1,0 +1,66 @@
+use std::collections::HashSet;
+
+fn parse_input(input: &str) -> Vec<i32> {
+    input.lines().map(|line| line.parse().unwrap()).collect()
+}
+
+fn solve_p1(input: &str) -> i32 {
+    let data = parse_input(input);
+    let target = 2020;
+    let mut seen = HashSet::new();
+    for &num in &data {
+        let complement = target - num;
+        if seen.contains(&complement) {
+            return num * complement;
+        }
+        seen.insert(num);
+    }
+    0
+}
+
+fn solve_p2(input: &str) -> i32 {
+    let data = parse_input(input);
+    let target = 2020;
+    let set: HashSet<i32> = data.iter().copied().collect();
+
+    let len = data.len();
+    for i in 0..len {
+        for j in i + 1..len {
+            let sum = data[i] + data[j];
+            let complement = target - sum;
+            // Check if complement exists and is different from the two we already picked
+            if complement != data[i] && complement != data[j] && set.contains(&complement) {
+                return data[i] * data[j] * complement;
+            }
+        }
+    }
+    0
+}
+
+fn main() {
+    let input = std::fs::read_to_string("input.txt").unwrap();
+
+    let start = std::time::Instant::now();
+    let answer = solve_p1(&input);
+    let elapsed = start.elapsed();
+    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
+
+    let start = std::time::Instant::now();
+    let answer = solve_p2(&input);
+    let elapsed = start.elapsed();
+    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_solve_with_test_input() {
+        let input = std::fs::read_to_string("test_input.txt").unwrap();
+        let answer = solve_p1(&input);
+        assert_eq!(answer, 514579);
+        let answer = solve_p2(&input);
+        assert_eq!(answer, 241861950);
+    }
+}
