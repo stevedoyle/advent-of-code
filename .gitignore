@@ -3,4 +3,4 @@
 __pycache__
 Cargo.lock
 target
-input.txt
+input*.txt
