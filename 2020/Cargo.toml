@@ -1,4 +1,16 @@
-[workspace]
-resolver = "2"
+[package]
+name = "aoc2020"
+version = "0.1.0"
+edition = "2021"
 
-members = [ "day01", "day02"]
+[dependencies]
+
+[dev-dependencies]
+
+[[bin]]
+name = "day01"
+path = "src/bin/day01.rs"
+
+[[bin]]
+name = "day02"
+path = "src/bin/day02.rs"

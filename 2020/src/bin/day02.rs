@@ -1,3 +1,5 @@
+use aoc2020::*;
+
 struct PasswordPolicy {
     min: usize,
     max: usize,
@@ -54,7 +56,7 @@ fn solve_p2(input: &str) -> i32 {
 }
 
 fn main() {
-    let input = std::fs::read_to_string("input.txt").unwrap();
+    let input = read_input(2);
 
     let start = std::time::Instant::now();
     let answer = solve_p1(&input);
@@ -73,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_solve_with_test_input() {
-        let input = std::fs::read_to_string("test_input.txt").unwrap();
+        let input = read_test_input(2);
         let answer = solve_p1(&input);
         assert_eq!(answer, 2);
         let answer = solve_p2(&input);
