@@ -3,30 +3,12 @@ use aoc2025::*;
 const CIRCLE_SIZE: i32 = 100;
 const START_POS: i32 = 50;
 
-#[derive(Debug, Clone, Copy)]
-enum Direction {
-    Left,
-    Right,
-}
-
-impl Direction {
-    fn from_char(c: char) -> Option<Self> {
-        match c {
-            'L' => Some(Direction::Left),
-            'R' => Some(Direction::Right),
-            _ => None,
-        }
-    }
-}
-
-fn parse_input(input: &str) -> Vec<(Direction, i32)> {
+fn parse_input(input: &str) -> Vec<(char, i32)> {
     input
         .lines()
         .map(|line| {
-            let (dir, dist) = line.split_at(1);
-            let direction = Direction::from_char(dir.chars().next().expect("Empty line"))
-                .expect("Invalid direction");
-            let distance = dist.trim().parse::<i32>().expect("Invalid distance");
+            let direction = line.chars().next().expect("Empty line");
+            let distance = line[1..].trim().parse::<i32>().expect("Invalid distance");
             (direction, distance)
         })
         .collect()
@@ -39,8 +21,9 @@ fn solve_p1(input: &str) -> i32 {
 
     for (dir, dist) in rotations.iter() {
         pos = match dir {
-            Direction::Left => (pos - dist).rem_euclid(CIRCLE_SIZE),
-            Direction::Right => (pos + dist).rem_euclid(CIRCLE_SIZE),
+            'L' => (pos - dist).rem_euclid(CIRCLE_SIZE),
+            'R' => (pos + dist).rem_euclid(CIRCLE_SIZE),
+            _ => panic!("Invalid direction"),
         };
         if pos == 0 {
             at_zero += 1;
@@ -49,34 +32,28 @@ fn solve_p1(input: &str) -> i32 {
     at_zero
 }
 
-fn count_zero_crossings(start_pos: i32, distance: i32, is_left: bool) -> (i32, i32) {
-    let finish_pos;
-    let mut crossings = 0;
-
-    if is_left {
-        finish_pos = (start_pos - distance).rem_euclid(CIRCLE_SIZE);
-        if start_pos == 0 {
-            crossings = distance / CIRCLE_SIZE;
-        } else {
-            crossings = (distance - start_pos + CIRCLE_SIZE) / CIRCLE_SIZE;
-        }
-    } else {
-        finish_pos = (start_pos + distance).rem_euclid(CIRCLE_SIZE);
-        crossings += (start_pos + distance) / CIRCLE_SIZE;
-    };
-
-    (finish_pos, crossings)
-}
-
 fn solve_p2(input: &str) -> i32 {
     let rotations = parse_input(input);
     let mut zero_crossings = 0;
     let mut pos = START_POS;
 
-    for (dir, dist) in rotations.iter() {
+    for (dir, distance) in rotations.iter() {
         let (new_pos, crossings) = match dir {
-            Direction::Left => count_zero_crossings(pos, *dist, true),
-            Direction::Right => count_zero_crossings(pos, *dist, false),
+            'L' => {
+                let finish_pos = (pos - distance).rem_euclid(CIRCLE_SIZE);
+                let crossings = if pos == 0 {
+                    distance / CIRCLE_SIZE
+                } else {
+                    (distance - pos + CIRCLE_SIZE) / CIRCLE_SIZE
+                };
+                (finish_pos, crossings)
+            }
+            'R' => {
+                let finish_pos = (pos + distance).rem_euclid(CIRCLE_SIZE);
+                let crossings = (pos + distance) / CIRCLE_SIZE;
+                (finish_pos, crossings)
+            }
+            _ => panic!("Invalid direction"),
         };
         pos = new_pos;
         zero_crossings += crossings;
