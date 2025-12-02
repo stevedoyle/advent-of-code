@@ -1,5 +1,3 @@
-use core::str;
-
 use aoc2025::*;
 
 fn parse_input(input: &str) -> Vec<(String, String)> {
@@ -39,8 +37,9 @@ fn get_simple_invalid_ids(start: &str, end: &str) -> Vec<usize> {
 fn get_invalid_ids(start: &str, end: &str) -> Vec<usize> {
     // An ID is invalid if it is constructed from any repeated sequence of digits
     // The range is inclusive and the IDs are strings of digits
+    // Note: A regex solution using ^(.+)\1+$ would be ideal but Rust's regex crate
+    // doesn't support backreferences, so we use a manual approach
 
-    // Compute the possible invalid IDs in the range
     let start_num: usize = start.parse().expect("Invalid start ID");
     let end_num: usize = end.parse().expect("Invalid end ID");
     let mut invalid_ids = Vec::new();
@@ -56,10 +55,9 @@ fn get_invalid_ids(start: &str, end: &str) -> Vec<usize> {
                 let repetitions = len / pattern_len;
 
                 // Check if the entire ID is made of this pattern repeated
-                let repeated = pattern.repeat(repetitions);
-                if repeated == id_str {
+                if pattern.repeat(repetitions) == id_str {
                     invalid_ids.push(id);
-                    break; // Found a valid pattern, no need to check further
+                    break;
                 }
             }
         }
@@ -71,8 +69,7 @@ fn solve_p1(input: &str) -> usize {
     let ranges = parse_input(input);
     ranges
         .iter()
-        .map(|(start, end)| get_simple_invalid_ids(start, end))
-        .flatten()
+        .flat_map(|(start, end)| get_simple_invalid_ids(start, end))
         .sum()
 }
 
@@ -80,8 +77,7 @@ fn solve_p2(input: &str) -> usize {
     let ranges = parse_input(input);
     ranges
         .iter()
-        .map(|(start, end)| get_invalid_ids(start, end))
-        .flatten()
+        .flat_map(|(start, end)| get_invalid_ids(start, end))
         .sum()
 }
 
