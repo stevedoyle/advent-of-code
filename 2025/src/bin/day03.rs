@@ -11,31 +11,14 @@ fn digit_str_to_vec(s: &str) -> Vec<usize> {
 }
 
 fn max_pairs(bank: &[usize]) -> usize {
-    let mut first_digit = bank[0];
-    let mut first_digit_index = 0;
-
-    for (i, digit) in bank.iter().enumerate().take(bank.len() - 1).skip(1) {
-        if *digit > first_digit {
-            first_digit = *digit;
-            first_digit_index = i;
-        }
-    }
-
-    let mut second_digit = bank[first_digit_index + 1];
-    for &digit in &bank[first_digit_index + 2..] {
-        if digit > second_digit {
-            second_digit = digit;
-        }
-    }
-    first_digit * 10 + second_digit
+    max_n_digits(bank, 2)
 }
 
 fn max_n_digits(bank: &[usize], n: usize) -> usize {
     let mut digits: Vec<usize> = Vec::new();
-    let mut digit_indices: Vec<usize> = Vec::new();
     let mut curr_digit_idx = 0;
 
-    (0..n).for_each(|i| {
+    for i in 0..n {
         let mut max_digit = 0;
         let mut max_digit_index = 0;
         for (j, digit) in bank
@@ -44,15 +27,15 @@ fn max_n_digits(bank: &[usize], n: usize) -> usize {
             .take(bank.len() - (n - i - 1))
             .skip(curr_digit_idx)
         {
+            // Note that max_by() would not work here since we want the first max in case of ties
             if *digit > max_digit {
                 max_digit = *digit;
                 max_digit_index = j;
             }
         }
         digits.push(max_digit);
-        digit_indices.push(max_digit_index);
         curr_digit_idx = max_digit_index + 1;
-    });
+    }
     digits.iter().fold(0, |acc, &d| acc * 10 + d)
 }
 
