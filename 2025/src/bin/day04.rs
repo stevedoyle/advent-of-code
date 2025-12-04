@@ -28,18 +28,16 @@ fn solve_p1(input: &str) -> usize {
     find_moveable_tps(&grid).len()
 }
 
-fn solve_p2(input: &str) -> i32 {
+fn solve_p2(input: &str) -> usize {
     let mut grid = parse_input(input);
     let mut total = 0;
-    let mut removed_some = true;
-    while removed_some {
+    loop {
         let moveable_tps = find_moveable_tps(&grid);
         if moveable_tps.is_empty() {
-            removed_some = false;
-        } else {
-            total += moveable_tps.len() as i32;
-            remove_tps(&mut grid, &moveable_tps);
+            break;
         }
+        total += moveable_tps.len();
+        remove_tps(&mut grid, &moveable_tps);
     }
     total
 }
