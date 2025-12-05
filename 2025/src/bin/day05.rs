@@ -13,22 +13,13 @@ fn parse_input(input: &str) -> (Vec<(usize, usize)>, Vec<usize>) {
     (ranges, ids)
 }
 
-fn solve_p1(input: &str) -> usize {
-    let (ranges, ids) = parse_input(input);
-    ids.iter()
-        .filter(|id| ranges.iter().any(|(start, end)| *id >= start && *id <= end))
-        .count()
-}
-
-fn solve_p2(input: &str) -> usize {
-    let (ranges, _ids) = parse_input(input);
-    // Merge overlapping ranges
+fn merge_ranges(ranges: &mut [(usize, usize)]) -> Vec<(usize, usize)> {
+    ranges.sort_by_key(|&(start, _)| start);
     let mut merged: Vec<(usize, usize)> = Vec::new();
-    let mut sorted_ranges = ranges.clone();
-    sorted_ranges.sort_by_key(|(start, _end)| *start);
-    for (start, end) in sorted_ranges {
+    for &(start, end) in ranges.iter() {
         if let Some((_last_start, last_end)) = merged.last_mut() {
-            if start <= *last_end {
+            if start <= *last_end + 1 {
+                // The +1 above allows merging adjacent ranges
                 *last_end = (*last_end).max(end);
             } else {
                 merged.push((start, end));
@@ -37,6 +28,19 @@ fn solve_p2(input: &str) -> usize {
             merged.push((start, end));
         }
     }
+    merged
+}
+
+fn solve_p1(input: &str) -> usize {
+    let (ranges, ids) = parse_input(input);
+    ids.iter()
+        .filter(|id| ranges.iter().any(|(start, end)| (start..=end).contains(id)))
+        .count()
+}
+
+fn solve_p2(input: &str) -> usize {
+    let (mut ranges, _ids) = parse_input(input);
+    let merged = merge_ranges(&mut ranges);
     // Count the numbers covered by the merged ranges
     merged.iter().map(|(start, end)| end - start + 1).sum()
 }
