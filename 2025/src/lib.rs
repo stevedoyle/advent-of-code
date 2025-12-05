@@ -143,6 +143,111 @@ pub mod grid {
         }
         None
     }
+
+    /// Run Dijkstra's algorithm on a grid with custom cost function
+    /// Returns a map of positions to their minimum cost from the start
+    pub fn dijkstra<T, F>(
+        grid: &[Vec<T>],
+        start: (usize, usize),
+        cost_fn: F,
+    ) -> std::collections::HashMap<(usize, usize), usize>
+    where
+        F: Fn(&T, &T) -> Option<usize>,
+    {
+        use std::collections::{BinaryHeap, HashMap};
+        use std::cmp::Reverse;
+
+        let mut dist: HashMap<(usize, usize), usize> = HashMap::new();
+        let mut heap = BinaryHeap::new();
+
+        dist.insert(start, 0);
+        heap.push((Reverse(0), start));
+
+        while let Some((Reverse(cost), pos)) = heap.pop() {
+            let (row, col) = pos;
+
+            if dist.get(&pos).map_or(false, |&d| cost > d) {
+                continue;
+            }
+
+            for (next_row, next_col) in valid_neighbors4(grid, row as isize, col as isize) {
+                let current_cell = &grid[row][col];
+                let next_cell = &grid[next_row][next_col];
+
+                if let Some(edge_cost) = cost_fn(current_cell, next_cell) {
+                    let next_cost = cost + edge_cost;
+                    let next_pos = (next_row, next_col);
+
+                    if next_cost < *dist.get(&next_pos).unwrap_or(&usize::MAX) {
+                        dist.insert(next_pos, next_cost);
+                        heap.push((Reverse(next_cost), next_pos));
+                    }
+                }
+            }
+        }
+
+        dist
+    }
+
+    /// Run Dijkstra's algorithm and find shortest path to target
+    /// Returns (cost, path) if a path exists
+    pub fn dijkstra_path<T, F>(
+        grid: &[Vec<T>],
+        start: (usize, usize),
+        target: (usize, usize),
+        cost_fn: F,
+    ) -> Option<(usize, Vec<(usize, usize)>)>
+    where
+        F: Fn(&T, &T) -> Option<usize>,
+    {
+        use std::collections::{BinaryHeap, HashMap};
+        use std::cmp::Reverse;
+
+        let mut dist: HashMap<(usize, usize), usize> = HashMap::new();
+        let mut prev: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
+        let mut heap = BinaryHeap::new();
+
+        dist.insert(start, 0);
+        heap.push((Reverse(0), start));
+
+        while let Some((Reverse(cost), pos)) = heap.pop() {
+            if pos == target {
+                // Reconstruct path
+                let mut path = vec![target];
+                let mut current = target;
+                while current != start {
+                    current = *prev.get(&current)?;
+                    path.push(current);
+                }
+                path.reverse();
+                return Some((cost, path));
+            }
+
+            if dist.get(&pos).map_or(false, |&d| cost > d) {
+                continue;
+            }
+
+            let (row, col) = pos;
+
+            for (next_row, next_col) in valid_neighbors4(grid, row as isize, col as isize) {
+                let current_cell = &grid[row][col];
+                let next_cell = &grid[next_row][next_col];
+
+                if let Some(edge_cost) = cost_fn(current_cell, next_cell) {
+                    let next_cost = cost + edge_cost;
+                    let next_pos = (next_row, next_col);
+
+                    if next_cost < *dist.get(&next_pos).unwrap_or(&usize::MAX) {
+                        dist.insert(next_pos, next_cost);
+                        prev.insert(next_pos, pos);
+                        heap.push((Reverse(next_cost), next_pos));
+                    }
+                }
+            }
+        }
+
+        None
+    }
 }
 
 #[cfg(test)]
@@ -216,5 +321,91 @@ mod tests {
         let grid = vec![vec![1, 2, 3], vec![2, 4, 2]];
         let positions = grid::find_all(&grid, |&x| x == 2);
         assert_eq!(positions, vec![(0, 1), (1, 0), (1, 2)]);
+    }
+
+    #[test]
+    fn test_dijkstra() {
+        // Simple 3x3 grid with uniform cost of 1
+        let grid = vec![
+            vec![1, 1, 1],
+            vec![1, 1, 1],
+            vec![1, 1, 1],
+        ];
+
+        let start = (0, 0);
+        let distances = grid::dijkstra(&grid, start, |_, _| Some(1));
+
+        // Check distances from top-left corner
+        assert_eq!(distances.get(&(0, 0)), Some(&0));
+        assert_eq!(distances.get(&(0, 1)), Some(&1));
+        assert_eq!(distances.get(&(1, 0)), Some(&1));
+        assert_eq!(distances.get(&(2, 2)), Some(&4));
+    }
+
+    #[test]
+    fn test_dijkstra_with_walls() {
+        // Grid where 0 is passable (cost 1) and 9 is a wall
+        // Path from (0,0) to (2,2): (0,0) -> (0,1) -> (1,1) -> (2,1) -> (2,2)
+        let grid = vec![
+            vec![0, 0, 9],
+            vec![9, 0, 9],
+            vec![0, 0, 0],
+        ];
+
+        let start = (0, 0);
+        let distances = grid::dijkstra(&grid, start, |_, next| {
+            if *next == 9 {
+                None // Wall - no path
+            } else {
+                Some(1) // Passable - cost 1
+            }
+        });
+
+        assert_eq!(distances.get(&(0, 0)), Some(&0));
+        assert_eq!(distances.get(&(0, 1)), Some(&1));
+        assert_eq!(distances.get(&(2, 2)), Some(&4)); // Correct distance is 4
+        assert_eq!(distances.get(&(0, 2)), None); // Wall is unreachable
+    }
+
+    #[test]
+    fn test_dijkstra_path() {
+        let grid = vec![
+            vec![1, 1, 1],
+            vec![1, 1, 1],
+            vec![1, 1, 1],
+        ];
+
+        let start = (0, 0);
+        let target = (2, 2);
+        let result = grid::dijkstra_path(&grid, start, target, |_, _| Some(1));
+
+        assert!(result.is_some());
+        let (cost, path) = result.unwrap();
+        assert_eq!(cost, 4);
+        assert_eq!(path.len(), 5);
+        assert_eq!(path[0], start);
+        assert_eq!(path[path.len() - 1], target);
+    }
+
+    #[test]
+    fn test_dijkstra_path_no_path() {
+        // Grid completely blocked
+        let grid = vec![
+            vec![0, 9, 0],
+            vec![9, 9, 9],
+            vec![0, 9, 0],
+        ];
+
+        let start = (0, 0);
+        let target = (2, 2);
+        let result = grid::dijkstra_path(&grid, start, target, |_, next| {
+            if *next == 9 {
+                None
+            } else {
+                Some(1)
+            }
+        });
+
+        assert!(result.is_none());
     }
 }
