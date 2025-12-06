@@ -3,15 +3,13 @@ use std::fs;
 /// Read input file for a given day
 pub fn read_input(day: u8) -> String {
     let path = format!("inputs/day{:02}.txt", day);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|_| panic!("Failed to read input file: {}", path))
+    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read input file: {}", path))
 }
 
 /// Read test input file for a given day
 pub fn read_test_input(day: u8) -> String {
     let path = format!("inputs/day{:02}_test.txt", day);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|_| panic!("Failed to read test input file: {}", path))
+    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test input file: {}", path))
 }
 
 /// Parse lines into a vector of type T
@@ -72,10 +70,10 @@ pub mod grid {
     /// Get 4-directional neighbors (up, down, left, right)
     pub fn neighbors4(row: isize, col: isize) -> [(isize, isize); 4] {
         [
-            (row - 1, col),     // up
-            (row + 1, col),     // down
-            (row, col - 1),     // left
-            (row, col + 1),     // right
+            (row - 1, col), // up
+            (row + 1, col), // down
+            (row, col - 1), // left
+            (row, col + 1), // right
         ]
     }
 
@@ -154,8 +152,8 @@ pub mod grid {
     where
         F: Fn(&T, &T) -> Option<usize>,
     {
-        use std::collections::{BinaryHeap, HashMap};
         use std::cmp::Reverse;
+        use std::collections::{BinaryHeap, HashMap};
 
         let mut dist: HashMap<(usize, usize), usize> = HashMap::new();
         let mut heap = BinaryHeap::new();
@@ -166,7 +164,7 @@ pub mod grid {
         while let Some((Reverse(cost), pos)) = heap.pop() {
             let (row, col) = pos;
 
-            if dist.get(&pos).map_or(false, |&d| cost > d) {
+            if dist.get(&pos).is_some_and(|&d| cost > d) {
                 continue;
             }
 
@@ -200,8 +198,8 @@ pub mod grid {
     where
         F: Fn(&T, &T) -> Option<usize>,
     {
-        use std::collections::{BinaryHeap, HashMap};
         use std::cmp::Reverse;
+        use std::collections::{BinaryHeap, HashMap};
 
         let mut dist: HashMap<(usize, usize), usize> = HashMap::new();
         let mut prev: HashMap<(usize, usize), (usize, usize)> = HashMap::new();
@@ -223,7 +221,7 @@ pub mod grid {
                 return Some((cost, path));
             }
 
-            if dist.get(&pos).map_or(false, |&d| cost > d) {
+            if dist.get(&pos).is_some_and(|&d| cost > d) {
                 continue;
             }
 
@@ -326,11 +324,7 @@ mod tests {
     #[test]
     fn test_dijkstra() {
         // Simple 3x3 grid with uniform cost of 1
-        let grid = vec![
-            vec![1, 1, 1],
-            vec![1, 1, 1],
-            vec![1, 1, 1],
-        ];
+        let grid = vec![vec![1, 1, 1], vec![1, 1, 1], vec![1, 1, 1]];
 
         let start = (0, 0);
         let distances = grid::dijkstra(&grid, start, |_, _| Some(1));
@@ -346,11 +340,7 @@ mod tests {
     fn test_dijkstra_with_walls() {
         // Grid where 0 is passable (cost 1) and 9 is a wall
         // Path from (0,0) to (2,2): (0,0) -> (0,1) -> (1,1) -> (2,1) -> (2,2)
-        let grid = vec![
-            vec![0, 0, 9],
-            vec![9, 0, 9],
-            vec![0, 0, 0],
-        ];
+        let grid = vec![vec![0, 0, 9], vec![9, 0, 9], vec![0, 0, 0]];
 
         let start = (0, 0);
         let distances = grid::dijkstra(&grid, start, |_, next| {
@@ -369,11 +359,7 @@ mod tests {
 
     #[test]
     fn test_dijkstra_path() {
-        let grid = vec![
-            vec![1, 1, 1],
-            vec![1, 1, 1],
-            vec![1, 1, 1],
-        ];
+        let grid = vec![vec![1, 1, 1], vec![1, 1, 1], vec![1, 1, 1]];
 
         let start = (0, 0);
         let target = (2, 2);
@@ -390,11 +376,7 @@ mod tests {
     #[test]
     fn test_dijkstra_path_no_path() {
         // Grid completely blocked
-        let grid = vec![
-            vec![0, 9, 0],
-            vec![9, 9, 9],
-            vec![0, 9, 0],
-        ];
+        let grid = vec![vec![0, 9, 0], vec![9, 9, 9], vec![0, 9, 0]];
 
         let start = (0, 0);
         let target = (2, 2);
