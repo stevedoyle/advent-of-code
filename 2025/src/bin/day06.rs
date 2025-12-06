@@ -1,33 +1,59 @@
 use aoc2025::*;
 
-fn parse_input(input: &str) -> (Vec<Vec<usize>>, Vec<char>) {
-    let mut operators = Vec::new();
-    let mut numbers = Vec::new();
-
-    input.lines().for_each(|line| {
-        if ['+', '*'].contains(&line.trim().chars().next().unwrap()) {
-            operators = line
-                .split_whitespace()
-                .map(|s| s.chars().next().unwrap())
-                .collect();
-        } else {
-            numbers.push(
-                line.split_whitespace()
-                    .map(|s| s.parse::<usize>().unwrap())
-                    .collect(),
-            );
-        }
-    });
-    (numbers, operators)
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Operator {
+    Add,
+    Multiply,
 }
 
-fn parse_input_as_grid(input: &str) -> Grid<char> {
-    parse_grid(input)
+impl Operator {
+    fn from_char(c: char) -> Result<Self, char> {
+        match c {
+            '+' => Ok(Operator::Add),
+            '*' => Ok(Operator::Multiply),
+            _ => Err(c),
+        }
+    }
+
+    fn apply(&self, numbers: &[usize]) -> usize {
+        match self {
+            Operator::Add => numbers.iter().sum(),
+            Operator::Multiply => numbers.iter().product(),
+        }
+    }
+}
+
+fn parse_input(input: &str) -> (Vec<Vec<usize>>, Vec<Operator>) {
+    let lines: Vec<&str> = input.lines().collect();
+
+    // Last line contains operators
+    let operators = lines
+        .last()
+        .expect("Input should have at least one line")
+        .split_whitespace()
+        .map(|s| {
+            let c = s.chars().next().expect("Operator should not be empty");
+            Operator::from_char(c).expect("Invalid operator character")
+        })
+        .collect();
+
+    // All lines except last contain numbers
+    let numbers = lines[..lines.len() - 1]
+        .iter()
+        .map(|line| {
+            line.split_whitespace()
+                .map(|s| s.parse::<usize>().expect("Failed to parse number"))
+                .collect()
+        })
+        .collect();
+
+    (numbers, operators)
 }
 
 fn extract_number_from_column(grid: &Grid<char>, col: usize) -> Option<usize> {
     let mut digit_chars = Vec::new();
     let (nrows, _) = grid::dimensions(grid);
+    // Skip the last row which contains operators
     for row in grid.iter().take(nrows - 1) {
         let c = row[col];
         if c != ' ' {
@@ -38,60 +64,76 @@ fn extract_number_from_column(grid: &Grid<char>, col: usize) -> Option<usize> {
         return None;
     }
     let digit_str: String = digit_chars.into_iter().collect();
-    let number: usize = digit_str.parse().unwrap();
+    let number: usize = digit_str.parse().expect("Failed to parse column number");
     Some(number)
-}
-
-fn process_group(numbers: &[usize], operator: &char) -> usize {
-    match operator {
-        '+' => numbers.iter().sum(),
-        '*' => numbers.iter().product(),
-        _ => panic!("Unknown operator"),
-    }
 }
 
 fn solve_p1(input: &str) -> usize {
     let (numbers, operators) = parse_input(input);
-    let mut results = Vec::new();
-    for (col, operator) in operators.iter().enumerate() {
-        match operator {
-            '+' => results.push(numbers.iter().map(|row| row[col]).sum()),
-            '*' => results.push(numbers.iter().map(|row| row[col]).product()),
-            _ => panic!("Unknown operator"),
-        }
-    }
-    results.iter().sum()
+    operators
+        .iter()
+        .enumerate()
+        .map(|(col, operator)| {
+            let column_values: Vec<usize> = numbers.iter().map(|row| row[col]).collect();
+            operator.apply(&column_values)
+        })
+        .sum()
 }
 
 fn solve_p2(input: &str) -> usize {
-    let grid = parse_input_as_grid(input);
-    // Iterate over the grid columns starting at the rightmost column.
-    // For each column, collect the digits into a number. The lower row numbers contain the most
-    // significant digits.
-    // The final row is the operator.
-    // A blank row represents a space between numbers.
+    let grid = parse_grid(input);
+
+    // Part 2 reads numbers VERTICALLY from right to left:
+    // - Each column contains digits of a number (top to bottom = most to least significant)
+    // - Empty columns separate different number groups
+    // - Bottom row contains operators (one per group)
+    // - Process: scan right-to-left, collect numbers in each group, apply operator
+    //
+    // Example:
+    //   1 2 3     3 2 8     5 1     6 4
+    //     4 5     6 4     3 8 7     2 3
+    //       6     9 8     2 1 5     3 1 4
+    //   *         +         *         +
+    //
+    // Groups (right-to-left):
+    //   Group 1: 64, 23, 314 → sum
+    //   Group 2: 51, 387, 215 → product
+    //   Group 3: 328, 64, 98 → sum
+    //   Group 4: 123, 45, 6 → product
+
     let mut numbers: Vec<usize> = Vec::new();
     let mut results = 0;
 
     let (nrows, ncols) = grid::dimensions(&grid);
 
-    let operators: Vec<char> = grid[nrows - 1]
+    // Extract operators from bottom row (filtering out spaces)
+    let operators: Vec<Operator> = grid[nrows - 1]
         .iter()
-        .cloned()
+        .copied()
         .filter(|&c| c == '+' || c == '*')
+        .map(|c| Operator::from_char(c).expect("Invalid operator in grid"))
         .collect();
     let mut operator_iter = operators.iter().rev();
 
+    // Process columns from right to left
     for col in (0..ncols).rev() {
         let current_number = extract_number_from_column(&grid, col);
         if let Some(num) = current_number {
             numbers.push(num);
             continue;
         }
-        results += process_group(&numbers, operator_iter.next().unwrap());
+        // Empty column = end of group, apply operator
+        results += operator_iter
+            .next()
+            .expect("Missing operator for group")
+            .apply(&numbers);
         numbers.clear();
     }
-    results += process_group(&numbers, operator_iter.next().unwrap());
+    // Process final group
+    results += operator_iter
+        .next()
+        .expect("Missing operator for final group")
+        .apply(&numbers);
     results
 }
 
