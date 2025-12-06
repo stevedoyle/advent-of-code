@@ -1,17 +1,91 @@
 use aoc2025::*;
 
-fn parse_input(input: &str) -> Vec<i32> {
-    parse_lines(input)
+fn parse_input(input: &str) -> (Vec<Vec<usize>>, Vec<char>) {
+    let mut operators = Vec::new();
+    let mut numbers = Vec::new();
+
+    input.lines().for_each(|line| {
+        if ['+', '*'].contains(&line.trim().chars().next().unwrap()) {
+            operators = line
+                .split_whitespace()
+                .map(|s| s.chars().next().unwrap())
+                .collect();
+        } else {
+            numbers.push(
+                line.split_whitespace()
+                    .map(|s| s.parse::<usize>().unwrap())
+                    .collect(),
+            );
+        }
+    });
+    (numbers, operators)
 }
 
-fn solve_p1(input: &str) -> i32 {
-    let _data = parse_input(input);
-    0
+fn parse_input_as_grid(input: &str) -> Grid<char> {
+    parse_grid(input)
 }
 
-fn solve_p2(input: &str) -> i32 {
-    let _data = parse_input(input);
-    0
+fn solve_p1(input: &str) -> usize {
+    let (numbers, operators) = parse_input(input);
+    let mut results = Vec::new();
+    for (col, operator) in operators.iter().enumerate() {
+        match operator {
+            '+' => results.push(numbers.iter().map(|row| row[col]).sum()),
+            '*' => results.push(numbers.iter().map(|row| row[col]).product()),
+            _ => panic!("Unknown operator"),
+        }
+    }
+    results.iter().sum()
+}
+
+fn solve_p2(input: &str) -> usize {
+    let grid = parse_input_as_grid(input);
+    // Iterate over the grid columns starting at the rightmost column.
+    // For each column, collect the digits into a number. The lower row numbers contain the most
+    // significant digits.
+    // The final row is the operator.
+    // A blank row represents a space between numbers.
+    let mut numbers: Vec<usize> = Vec::new();
+    let mut results: Vec<usize> = Vec::new();
+
+    let (nrows, ncols) = grid::dimensions(&grid);
+
+    let operators: Vec<char> = grid[nrows - 1]
+        .iter()
+        .cloned()
+        .filter(|&c| c == '+' || c == '*')
+        .collect();
+    let mut operator_iter = operators.iter().rev();
+
+    for col in (0..ncols).rev() {
+        let mut digit_chars = Vec::new();
+        for row in grid.iter().take(nrows - 1) {
+            let c = row[col];
+            if c != ' ' {
+                digit_chars.push(c);
+            }
+        }
+        if digit_chars.is_empty() {
+            let operator = operator_iter.next().unwrap();
+            match operator {
+                '+' => results.push(numbers.iter().sum()),
+                '*' => results.push(numbers.iter().product()),
+                _ => panic!("Unknown operator"),
+            }
+            numbers.clear();
+            continue;
+        }
+        let digit_str: String = digit_chars.into_iter().collect();
+        let current_number: usize = digit_str.parse().unwrap();
+        numbers.push(current_number);
+    }
+    let operator = operator_iter.next().unwrap();
+    match operator {
+        '+' => results.push(numbers.iter().sum()),
+        '*' => results.push(numbers.iter().product()),
+        _ => panic!("Unknown operator"),
+    }
+    results.iter().sum()
 }
 
 fn main() {
@@ -36,8 +110,8 @@ mod tests {
     fn test_solve_with_test_input() {
         let input = read_test_input(6);
         let answer = solve_p1(&input);
-        assert_eq!(answer, 0);
+        assert_eq!(answer, 4277556);
         let answer = solve_p2(&input);
-        assert_eq!(answer, 0);
+        assert_eq!(answer, 3263827);
     }
 }
