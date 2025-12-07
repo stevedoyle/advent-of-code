@@ -14,18 +14,23 @@ fn solve_p1(input: &str) -> usize {
     let manifold = parse_grid(input);
     let mut rays = HashSet::new();
     let mut splits = 0;
-    // Find the start position on the first row
     let (_, start_col) = find_start(&manifold);
     rays.insert(start_col);
+
     for row in &manifold[1..] {
-        for (col, value) in row.iter().enumerate() {
-            if value == &'^' && rays.contains(&col) {
-                rays.remove(&col);
-                rays.insert(col - 1);
-                rays.insert(col + 1);
+        let mut next_rays = HashSet::new();
+        for &col in &rays {
+            if row[col] == '^' {
+                // Hit a splitter, branch left and right
+                next_rays.insert(col - 1);
+                next_rays.insert(col + 1);
                 splits += 1;
+            } else {
+                // Continue straight
+                next_rays.insert(col);
             }
         }
+        rays = next_rays;
     }
     splits
 }
