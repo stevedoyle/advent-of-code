@@ -1,16 +1,127 @@
+use std::str::FromStr;
+
 use aoc2025::*;
 
-fn parse_input(input: &str) -> Vec<i32> {
+struct Coord3D {
+    x: i32,
+    y: i32,
+    z: i32,
+}
+
+impl FromStr for Coord3D {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts: Vec<&str> = s.trim().split(',').collect();
+        if parts.len() != 3 {
+            return Err(());
+        }
+        let x = parts[0].parse::<i32>().map_err(|_| ())?;
+        let y = parts[1].parse::<i32>().map_err(|_| ())?;
+        let z = parts[2].parse::<i32>().map_err(|_| ())?;
+        Ok(Coord3D { x, y, z })
+    }
+}
+
+fn parse_input(input: &str) -> Vec<Coord3D> {
     parse_lines(input)
 }
 
-fn solve_p1(input: &str) -> i32 {
-    let _data = parse_input(input);
-    0
+fn distance(a: &Coord3D, b: &Coord3D) -> f64 {
+    let dx = (a.x - b.x) as f64;
+    let dy = (a.y - b.y) as f64;
+    let dz = (a.z - b.z) as f64;
+    (dx * dx + dy * dy + dz * dz).sqrt()
 }
 
-fn solve_p2(input: &str) -> i32 {
-    let _data = parse_input(input);
+struct UnionFind {
+    parent: Vec<usize>,
+    size: Vec<usize>,
+}
+
+impl UnionFind {
+    fn new(n: usize) -> Self {
+        Self {
+            parent: (0..n).collect(),
+            size: vec![1; n],
+        }
+    }
+
+    fn find(&mut self, x: usize) -> usize {
+        if self.parent[x] != x {
+            self.parent[x] = self.find(self.parent[x]); // path compression
+        }
+        self.parent[x]
+    }
+
+    fn union(&mut self, x: usize, y: usize) {
+        let root_x = self.find(x);
+        let root_y = self.find(y);
+        if root_x != root_y {
+            if self.size[root_x] < self.size[root_y] {
+                self.parent[root_x] = root_y;
+                self.size[root_y] += self.size[root_x];
+            } else {
+                self.parent[root_y] = root_x;
+                self.size[root_x] += self.size[root_y];
+            }
+        }
+    }
+
+    fn component_sizes(&mut self) -> Vec<usize> {
+        use std::collections::HashMap;
+        let mut sizes = HashMap::new();
+        for i in 0..self.parent.len() {
+            let root = self.find(i);
+            *sizes.entry(root).or_insert(0) += 1;
+        }
+        sizes.into_values().collect()
+    }
+}
+
+fn pairwise_distances(boxes: &[Coord3D]) -> Vec<((usize, usize), f64)> {
+    let mut distances = Vec::new();
+    for i in 0..boxes.len() {
+        for j in (i + 1)..boxes.len() {
+            let dist = distance(&boxes[i], &boxes[j]);
+            distances.push(((i, j), dist));
+        }
+    }
+    distances.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    distances
+}
+
+fn find_circuit_sizes(boxes: &[Coord3D], num_connections: usize) -> Vec<usize> {
+    let distances = pairwise_distances(boxes);
+
+    // Build connected components using Union-Find
+    let mut uf = UnionFind::new(boxes.len());
+    for &((i, j), _) in distances.iter().take(num_connections) {
+        uf.union(i, j);
+    }
+
+    uf.component_sizes()
+}
+
+fn solve_p1(input: &str, num_connections: usize) -> usize {
+    let boxes = parse_input(input);
+    let mut circuit_sizes = find_circuit_sizes(&boxes, num_connections);
+    circuit_sizes.sort_unstable_by(|a, b| b.cmp(a));
+    circuit_sizes.iter().take(3).product()
+}
+
+fn solve_p2(input: &str) -> usize {
+    let boxes = parse_input(input);
+    let distances = pairwise_distances(&boxes);
+
+    // Build connected components using Union-Find
+    let mut uf = UnionFind::new(boxes.len());
+    for &((i, j), _) in distances.iter() {
+        uf.union(i, j);
+        if uf.component_sizes().len() == 1 {
+            return boxes[i].x as usize * boxes[j].x as usize;
+        }
+    }
     0
 }
 
@@ -18,7 +129,7 @@ fn main() {
     let input = read_input(8);
 
     let start = std::time::Instant::now();
-    let answer = solve_p1(&input);
+    let answer = solve_p1(&input, 1000);
     let elapsed = start.elapsed();
     println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
 
@@ -35,9 +146,9 @@ mod tests {
     #[test]
     fn test_solve_with_test_input() {
         let input = read_test_input(8);
-        let answer = solve_p1(&input);
-        assert_eq!(answer, 0);
+        let answer = solve_p1(&input, 10);
+        assert_eq!(answer, 40);
         let answer = solve_p2(&input);
-        assert_eq!(answer, 0);
+        assert_eq!(answer, 25272);
     }
 }
