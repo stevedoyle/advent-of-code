@@ -44,13 +44,13 @@ pub fn parse_digit_grid(input: &str) -> Grid<u32> {
 /// Point in 2D space
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
-    pub x: i32,
-    pub y: i32,
+    pub x: isize,
+    pub y: isize,
 }
 
 impl Point {
     /// Create a new point
-    pub fn new(x: i32, y: i32) -> Self {
+    pub fn new(x: isize, y: isize) -> Self {
         Self { x, y }
     }
 
@@ -79,12 +79,12 @@ impl Point {
     }
 
     /// Manhattan distance from origin
-    pub fn manhattan_distance(&self) -> i32 {
+    pub fn manhattan_distance(&self) -> isize {
         self.x.abs() + self.y.abs()
     }
 
     /// Manhattan distance to another point
-    pub fn manhattan_distance_to(&self, other: &Point) -> i32 {
+    pub fn manhattan_distance_to(&self, other: &Point) -> isize {
         (self.x - other.x).abs() + (self.y - other.y).abs()
     }
 
@@ -99,7 +99,7 @@ impl Point {
     }
 
     /// Scale a point by a scalar
-    pub fn scale(&self, scalar: i32) -> Self {
+    pub fn scale(&self, scalar: isize) -> Self {
         Self::new(self.x * scalar, self.y * scalar)
     }
 
