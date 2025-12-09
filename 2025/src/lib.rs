@@ -41,6 +41,115 @@ pub fn parse_digit_grid(input: &str) -> Grid<u32> {
         .collect()
 }
 
+/// Point in 2D space
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Point {
+    pub x: i32,
+    pub y: i32,
+}
+
+impl Point {
+    /// Create a new point
+    pub fn new(x: i32, y: i32) -> Self {
+        Self { x, y }
+    }
+
+    /// Parse a point from a string like "x,y" or "x y"
+    pub fn parse(s: &str) -> Result<Self, String> {
+        let parts: Vec<&str> = if s.contains(',') {
+            s.split(',').collect()
+        } else {
+            s.split_whitespace().collect()
+        };
+
+        if parts.len() != 2 {
+            return Err(format!("Expected 2 coordinates, found {}", parts.len()));
+        }
+
+        let x = parts[0]
+            .trim()
+            .parse()
+            .map_err(|_| format!("Invalid x coordinate: {}", parts[0]))?;
+        let y = parts[1]
+            .trim()
+            .parse()
+            .map_err(|_| format!("Invalid y coordinate: {}", parts[1]))?;
+
+        Ok(Self::new(x, y))
+    }
+
+    /// Manhattan distance from origin
+    pub fn manhattan_distance(&self) -> i32 {
+        self.x.abs() + self.y.abs()
+    }
+
+    /// Manhattan distance to another point
+    pub fn manhattan_distance_to(&self, other: &Point) -> i32 {
+        (self.x - other.x).abs() + (self.y - other.y).abs()
+    }
+
+    /// Add two points
+    pub fn add(&self, other: &Point) -> Self {
+        Self::new(self.x + other.x, self.y + other.y)
+    }
+
+    /// Subtract two points
+    pub fn sub(&self, other: &Point) -> Self {
+        Self::new(self.x - other.x, self.y - other.y)
+    }
+
+    /// Scale a point by a scalar
+    pub fn scale(&self, scalar: i32) -> Self {
+        Self::new(self.x * scalar, self.y * scalar)
+    }
+
+    /// Get 4-directional neighbors (up, down, left, right)
+    pub fn neighbors4(&self) -> [Point; 4] {
+        [
+            Point::new(self.x, self.y - 1), // up
+            Point::new(self.x, self.y + 1), // down
+            Point::new(self.x - 1, self.y), // left
+            Point::new(self.x + 1, self.y), // right
+        ]
+    }
+
+    /// Get 8-directional neighbors (including diagonals)
+    pub fn neighbors8(&self) -> [Point; 8] {
+        [
+            Point::new(self.x - 1, self.y - 1), // up-left
+            Point::new(self.x, self.y - 1),     // up
+            Point::new(self.x + 1, self.y - 1), // up-right
+            Point::new(self.x - 1, self.y),     // left
+            Point::new(self.x + 1, self.y),     // right
+            Point::new(self.x - 1, self.y + 1), // down-left
+            Point::new(self.x, self.y + 1),     // down
+            Point::new(self.x + 1, self.y + 1), // down-right
+        ]
+    }
+}
+
+impl std::str::FromStr for Point {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s)
+    }
+}
+
+impl std::fmt::Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.x, self.y)
+    }
+}
+
+/// Parse points from input lines
+pub fn parse_points(input: &str) -> Vec<Point> {
+    input
+        .lines()
+        .filter_map(|line| Point::parse(line).ok())
+        .collect()
+}
+
 /// Grid type alias
 pub type Grid<T> = Vec<Vec<T>>;
 
@@ -251,6 +360,70 @@ pub mod grid {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_point_new() {
+        let p = Point::new(3, 4);
+        assert_eq!(p.x, 3);
+        assert_eq!(p.y, 4);
+    }
+
+    #[test]
+    fn test_point_parse() {
+        assert_eq!(Point::parse("3,4").unwrap(), Point::new(3, 4));
+        assert_eq!(Point::parse("3 4").unwrap(), Point::new(3, 4));
+        assert_eq!(Point::parse("-5,10").unwrap(), Point::new(-5, 10));
+        assert!(Point::parse("invalid").is_err());
+        assert!(Point::parse("1,2,3").is_err());
+    }
+
+    #[test]
+    fn test_point_manhattan_distance() {
+        let p1 = Point::new(3, 4);
+        assert_eq!(p1.manhattan_distance(), 7);
+
+        let p2 = Point::new(-3, -4);
+        assert_eq!(p2.manhattan_distance(), 7);
+
+        let p3 = Point::new(0, 0);
+        let p4 = Point::new(3, 4);
+        assert_eq!(p3.manhattan_distance_to(&p4), 7);
+    }
+
+    #[test]
+    fn test_point_operations() {
+        let p1 = Point::new(3, 4);
+        let p2 = Point::new(1, 2);
+
+        assert_eq!(p1.add(&p2), Point::new(4, 6));
+        assert_eq!(p1.sub(&p2), Point::new(2, 2));
+        assert_eq!(p1.scale(2), Point::new(6, 8));
+    }
+
+    #[test]
+    fn test_point_neighbors() {
+        let p = Point::new(5, 5);
+        let n4 = p.neighbors4();
+        assert_eq!(n4[0], Point::new(5, 4)); // up
+        assert_eq!(n4[1], Point::new(5, 6)); // down
+        assert_eq!(n4[2], Point::new(4, 5)); // left
+        assert_eq!(n4[3], Point::new(6, 5)); // right
+
+        let n8 = p.neighbors8();
+        assert_eq!(n8.len(), 8);
+        assert!(n8.contains(&Point::new(4, 4))); // up-left diagonal
+        assert!(n8.contains(&Point::new(6, 6))); // down-right diagonal
+    }
+
+    #[test]
+    fn test_parse_points() {
+        let input = "1,2\n3,4\n5 6";
+        let points = parse_points(input);
+        assert_eq!(
+            points,
+            vec![Point::new(1, 2), Point::new(3, 4), Point::new(5, 6)]
+        );
+    }
 
     #[test]
     fn test_parse_lines() {
