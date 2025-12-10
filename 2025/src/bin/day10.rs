@@ -143,11 +143,13 @@ fn min_presses_for_joltage(machine: &Machine) -> usize {
         // joltage
         problem.add_constraint(e.eq(j as f64));
     }
-    let solution = problem.solve().unwrap();
-    button_presses
-        .iter()
-        .map(|&v| solution.value(v))
-        .sum::<f64>() as usize
+    match problem.solve() {
+        Ok(solution) => button_presses
+            .iter()
+            .map(|&v| solution.value(v))
+            .sum::<f64>() as usize,
+        Err(_) => 0, // No solution exists
+    }
 }
 
 fn solve_p1(input: &str) -> usize {
