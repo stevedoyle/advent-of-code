@@ -12,6 +12,12 @@ pub fn read_test_input(day: u8) -> String {
     fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test input file: {}", path))
 }
 
+/// Read 2nd test input file for a given day
+pub fn read_test_input_2(day: u8) -> String {
+    let path = format!("inputs/day{:02}_test2.txt", day);
+    fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read test input file: {}", path))
+}
+
 /// Parse lines into a vector of type T
 pub fn parse_lines<T>(input: &str) -> Vec<T>
 where
