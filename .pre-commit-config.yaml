@@ -20,3 +20,17 @@ repos:
   rev: v18.1.4
   hooks:
   - id: clang-format
+- repo: local
+  hooks:
+  - id: cargo-fmt-2026
+    name: cargo fmt (2026)
+    entry: cargo fmt --manifest-path 2026/Cargo.toml
+    language: system
+    files: ^2026/.*\.rs$
+    pass_filenames: false
+  - id: cargo-clippy-2026
+    name: cargo clippy (2026)
+    entry: cargo clippy --manifest-path 2026/Cargo.toml --all-targets -- -D warnings
+    language: system
+    files: ^2026/.*\.rs$
+    pass_filenames: false
