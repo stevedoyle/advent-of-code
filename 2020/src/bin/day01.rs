@@ -1,6 +1,8 @@
 use aoc2020::*;
 use std::collections::HashSet;
 
+const DAY: u8 = 1;
+
 fn parse_input(input: &str) -> Vec<i32> {
     parse_lines(input)
 }
@@ -39,17 +41,7 @@ fn solve_p2(input: &str) -> i32 {
 }
 
 fn main() {
-    let input = read_input(1);
-
-    let start = std::time::Instant::now();
-    let answer = solve_p1(&input);
-    let elapsed = start.elapsed();
-    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
-
-    let start = std::time::Instant::now();
-    let answer = solve_p2(&input);
-    let elapsed = start.elapsed();
-    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+    run(DAY, solve_p1, solve_p2);
 }
 
 #[cfg(test)]
@@ -57,11 +49,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_solve_with_test_input() {
-        let input = read_test_input(1);
-        let answer = solve_p1(&input);
-        assert_eq!(answer, 514579);
-        let answer = solve_p2(&input);
-        assert_eq!(answer, 241861950);
+    fn part1() {
+        assert_eq!(solve_p1(&read_test_input(DAY, 1)), 514579);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_p2(&read_test_input(DAY, 1)), 241861950);
     }
 }

@@ -1,7 +1,15 @@
 use std::collections::HashMap;
 
+use aoc2020::*;
+
+const DAY: u8 = 15;
+
 fn parse_input(input: &str) -> Vec<usize> {
-    input.split(',').map(|s| s.parse().unwrap()).collect()
+    input
+        .trim()
+        .split(',')
+        .map(|s| s.parse().unwrap())
+        .collect()
 }
 
 fn play_game(starting_numbers: &[usize], target_turn: usize) -> usize {
@@ -44,17 +52,7 @@ fn solve_p2(input: &str) -> usize {
 }
 
 fn main() {
-    let input = "1,20,8,12,0,14";
-
-    let start = std::time::Instant::now();
-    let answer = solve_p1(&input);
-    let elapsed = start.elapsed();
-    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
-
-    let start = std::time::Instant::now();
-    let answer = solve_p2(&input);
-    let elapsed = start.elapsed();
-    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+    run(DAY, solve_p1, solve_p2);
 }
 
 #[cfg(test)]
@@ -62,7 +60,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_solve_with_test_input() {
+    fn part1() {
         assert_eq!(solve_p1("0,3,6"), 436);
         assert_eq!(solve_p1("1,3,2"), 1);
         assert_eq!(solve_p1("2,1,3"), 10);
@@ -70,7 +68,10 @@ mod tests {
         assert_eq!(solve_p1("2,3,1"), 78);
         assert_eq!(solve_p1("3,2,1"), 438);
         assert_eq!(solve_p1("3,1,2"), 1836);
+    }
 
+    #[test]
+    fn part2() {
         assert_eq!(solve_p2("0,3,6"), 175594);
         assert_eq!(solve_p2("1,3,2"), 2578);
         assert_eq!(solve_p2("2,1,3"), 3544142);
