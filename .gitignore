@@ -5,3 +5,4 @@ Cargo.lock
 target
 input*.txt
 day??.txt
+.DS_Store
