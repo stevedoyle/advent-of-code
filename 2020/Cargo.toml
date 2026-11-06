@@ -1,47 +1,16 @@
 [package]
 name = "aoc2020"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+
+# Day binaries are auto-discovered from src/bin/dayNN.rs — no [[bin]] entries needed.
 
 [dependencies]
+# Add only on the day it's needed:
+# itertools = "0.14"
+# pathfinding = "4"
+# good_lp = { version = "1.14", features = ["highs"], default-features = false }  # HiGHS is a slow C++ build
 
-[dev-dependencies]
-
-[[bin]]
-name = "day01"
-path = "src/bin/day01.rs"
-
-[[bin]]
-name = "day02"
-path = "src/bin/day02.rs"
-
-[[bin]]
-name = "day03"
-path = "src/bin/day03.rs"
-
-[[bin]]
-name = "day04"
-path = "src/bin/day04.rs"
-
-[[bin]]
-name = "day05"
-path = "src/bin/day05.rs"
-
-[[bin]]
-name = "day06"
-path = "src/bin/day06.rs"
-[[bin]]
-name = "day07"
-path = "src/bin/day07.rs"
-
-[[bin]]
-name = "day08"
-path = "src/bin/day08.rs"
-
-[[bin]]
-name = "day17"
-path = "src/bin/day17.rs"
-
-[[bin]]
-name = "day09"
-path = "src/bin/day09.rs"
+# Keep debug builds fast to compile, but optimise dependencies.
+[profile.dev.package."*"]
+opt-level = 3

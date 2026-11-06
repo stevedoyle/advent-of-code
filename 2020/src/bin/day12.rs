@@ -1,5 +1,7 @@
 use aoc2020::*;
 
+const DAY: u8 = 12;
+
 struct Instruction {
     action: char,
     value: i32,
@@ -104,17 +106,7 @@ fn solve_p2(input: &str) -> usize {
 }
 
 fn main() {
-    let input = read_input(12);
-
-    let start = std::time::Instant::now();
-    let answer = solve_p1(&input);
-    let elapsed = start.elapsed();
-    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
-
-    let start = std::time::Instant::now();
-    let answer = solve_p2(&input);
-    let elapsed = start.elapsed();
-    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+    run(DAY, solve_p1, solve_p2);
 }
 
 #[cfg(test)]
@@ -122,11 +114,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_solve_with_test_input() {
-        let input = read_test_input(12);
-        let answer = solve_p1(&input);
-        assert_eq!(answer, 25);
-        let answer = solve_p2(&input);
-        assert_eq!(answer, 286);
+    fn part1() {
+        assert_eq!(solve_p1(&read_test_input(DAY, 1)), 25);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_p2(&read_test_input(DAY, 1)), 286);
     }
 }

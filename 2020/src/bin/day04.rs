@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use aoc2020::*;
 
+const DAY: u8 = 4;
+
 const REQUIRED_FIELDS: [&str; 7] = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
 
 fn parse_input(input: &str) -> Vec<HashMap<String, String>> {
@@ -100,17 +102,7 @@ fn solve_p2(input: &str) -> usize {
 }
 
 fn main() {
-    let input = read_input(4);
-
-    let start = std::time::Instant::now();
-    let answer = solve_p1(&input);
-    let elapsed = start.elapsed();
-    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
-
-    let start = std::time::Instant::now();
-    let answer = solve_p2(&input);
-    let elapsed = start.elapsed();
-    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+    run(DAY, solve_p1, solve_p2);
 }
 
 #[cfg(test)]
@@ -118,11 +110,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_solve_with_test_input() {
-        let input = read_test_input(4);
-        let answer = solve_p1(&input);
-        assert_eq!(answer, 2);
-        let answer = solve_p2(&input);
-        assert_eq!(answer, 2);
+    fn part1() {
+        assert_eq!(solve_p1(&read_test_input(DAY, 1)), 2);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_p2(&read_test_input(DAY, 1)), 2);
     }
 }

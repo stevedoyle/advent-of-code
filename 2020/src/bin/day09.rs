@@ -1,5 +1,7 @@
 use aoc2020::*;
 
+const DAY: u8 = 9;
+
 fn parse_input(input: &str) -> Vec<usize> {
     parse_lines(input)
 }
@@ -52,17 +54,11 @@ fn solve_p2(input: &str, window_size: usize) -> usize {
 }
 
 fn main() {
-    let input = read_input(9);
-
-    let start = std::time::Instant::now();
-    let answer = solve_p1(&input, 25);
-    let elapsed = start.elapsed();
-    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
-
-    let start = std::time::Instant::now();
-    let answer = solve_p2(&input, 25);
-    let elapsed = start.elapsed();
-    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+    run(
+        DAY,
+        |input| solve_p1(input, 25),
+        |input| solve_p2(input, 25),
+    );
 }
 
 #[cfg(test)]
@@ -70,11 +66,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_solve_with_test_input() {
-        let input = read_test_input(9);
-        let answer = solve_p1(&input, 5);
-        assert_eq!(answer, 127);
-        let answer = solve_p2(&input, 5);
-        assert_eq!(answer, 62);
+    fn part1() {
+        assert_eq!(solve_p1(&read_test_input(DAY, 1), 5), 127);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_p2(&read_test_input(DAY, 1), 5), 62);
     }
 }

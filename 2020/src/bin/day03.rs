@@ -1,19 +1,20 @@
 use aoc2020::*;
 
-fn parse_input(input: &str) -> Grid<char> {
-    parse_grid(input)
+const DAY: u8 = 3;
+
+fn parse_input(input: &str) -> Grid<u8> {
+    Grid::parse(input)
 }
 
-fn traverse_slope(slope: &Grid<char>, right: usize, down: usize) -> usize {
-    let (rows, cols) = grid::dimensions(slope);
-    let mut pos = (0, 0);
+fn traverse_slope(slope: &Grid<u8>, right: i64, down: i64) -> usize {
+    let step = Point::new(right, down);
+    let mut pos = Point::ORIGIN;
     let mut tree_count = 0;
-    while pos.0 < rows {
-        if slope[pos.0][pos.1 % cols] == '#' {
+    while pos.y < slope.height {
+        if slope[Point::new(pos.x % slope.width, pos.y)] == b'#' {
             tree_count += 1;
         }
-        pos.0 += down;
-        pos.1 += right;
+        pos += step;
     }
     tree_count
 }
@@ -34,17 +35,7 @@ fn solve_p2(input: &str) -> usize {
 }
 
 fn main() {
-    let input = read_input(3);
-
-    let start = std::time::Instant::now();
-    let answer = solve_p1(&input);
-    let elapsed = start.elapsed();
-    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
-
-    let start = std::time::Instant::now();
-    let answer = solve_p2(&input);
-    let elapsed = start.elapsed();
-    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+    run(DAY, solve_p1, solve_p2);
 }
 
 #[cfg(test)]
@@ -52,11 +43,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_solve_with_test_input() {
-        let input = read_test_input(3);
-        let answer = solve_p1(&input);
-        assert_eq!(answer, 7);
-        let answer = solve_p2(&input);
-        assert_eq!(answer, 336);
+    fn part1() {
+        assert_eq!(solve_p1(&read_test_input(DAY, 1)), 7);
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(solve_p2(&read_test_input(DAY, 1)), 336);
     }
 }

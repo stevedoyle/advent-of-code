@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use aoc2020::*;
 
+const DAY: u8 = 14;
+
 struct Instruction {
     mask: String,
     address: usize,
@@ -83,17 +85,7 @@ fn solve_p2(input: &str) -> usize {
 }
 
 fn main() {
-    let input = read_input(14);
-
-    let start = std::time::Instant::now();
-    let answer = solve_p1(&input);
-    let elapsed = start.elapsed();
-    println!("Part 1: {answer}, elapsed: {elapsed:.1?}");
-
-    let start = std::time::Instant::now();
-    let answer = solve_p2(&input);
-    let elapsed = start.elapsed();
-    println!("Part 2: {answer}, elapsed: {elapsed:.1?}");
+    run(DAY, solve_p1, solve_p2);
 }
 
 #[cfg(test)]
@@ -101,16 +93,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_p1() {
-        let input = read_test_input(14);
-        let answer = solve_p1(&input);
-        assert_eq!(answer, 165);
+    fn part1() {
+        assert_eq!(solve_p1(&read_test_input(DAY, 1)), 165);
     }
 
     #[test]
-    fn test_p2() {
-        let input = std::fs::read_to_string("inputs/day14_p2_test.txt").unwrap();
-        let answer = solve_p2(&input);
-        assert_eq!(answer, 208);
+    fn part2() {
+        assert_eq!(solve_p2(&read_test_input(DAY, 2)), 208);
     }
 }
