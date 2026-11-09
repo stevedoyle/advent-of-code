@@ -6,12 +6,18 @@ fn parse_input(input: &str) -> &str {
     input.trim()
 }
 
-fn find(key: &str, prefix: &str) -> usize {
+/// True if the first `zeros` hex digits of the digest are all zero.
+fn has_leading_zeros(digest: &[u8; 16], zeros: usize) -> bool {
+    let full_bytes = zeros / 2;
+    digest[..full_bytes].iter().all(|&b| b == 0)
+        && (zeros % 2 == 0 || digest[full_bytes] >> 4 == 0)
+}
+
+fn find(key: &str, zeros: usize) -> usize {
     let mut i = 0;
     loop {
-        let input = format!("{}{}", key, i);
-        let digest = format!("{:x}", md5::compute(input));
-        if digest.starts_with(prefix) {
+        let digest = md5::compute(format!("{}{}", key, i));
+        if has_leading_zeros(&digest.0, zeros) {
             return i;
         }
         i += 1;
@@ -20,12 +26,12 @@ fn find(key: &str, prefix: &str) -> usize {
 
 fn solve_p1(input: &str) -> usize {
     let key = parse_input(input);
-    find(key, "00000")
+    find(key, 5)
 }
 
 fn solve_p2(input: &str) -> usize {
     let key = parse_input(input);
-    find(key, "000000")
+    find(key, 6)
 }
 
 fn main() {
