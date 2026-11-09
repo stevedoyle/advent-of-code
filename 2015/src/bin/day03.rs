@@ -9,18 +9,17 @@ fn parse_input(input: &str) -> String {
 fn solve_p1(input: &str) -> usize {
     let data = parse_input(input);
     let mut visited = std::collections::HashSet::new();
-    let mut x = 0;
-    let mut y = 0;
-    visited.insert((x, y));
+    let mut santa = Point::ORIGIN;
+    visited.insert(santa);
     for c in data.chars() {
         match c {
-            '>' => x += 1,
-            '<' => x -= 1,
-            '^' => y += 1,
-            'v' => y -= 1,
+            '>' => santa += Point::RIGHT,
+            '<' => santa += Point::LEFT,
+            '^' => santa += Point::UP,
+            'v' => santa += Point::DOWN,
             _ => {}
         }
-        visited.insert((x, y));
+        visited.insert(santa);
     }
     visited.len()
 }
@@ -28,25 +27,19 @@ fn solve_p1(input: &str) -> usize {
 fn solve_p2(input: &str) -> usize {
     let data = parse_input(input);
     let mut visited = std::collections::HashSet::new();
-    let mut x_santa = 0;
-    let mut y_santa = 0;
-    let mut x_robo = 0;
-    let mut y_robo = 0;
-    visited.insert((0, 0));
+    let mut santa = Point::ORIGIN;
+    let mut robo = Point::ORIGIN;
+    visited.insert(santa);
     for (i, c) in data.chars().enumerate() {
-        let (x, y) = if i % 2 == 0 {
-            (&mut x_santa, &mut y_santa)
-        } else {
-            (&mut x_robo, &mut y_robo)
-        };
+        let current = if i % 2 == 0 { &mut santa } else { &mut robo };
         match c {
-            '>' => *x += 1,
-            '<' => *x -= 1,
-            '^' => *y += 1,
-            'v' => *y -= 1,
+            '>' => *current += Point::RIGHT,
+            '<' => *current += Point::LEFT,
+            '^' => *current += Point::UP,
+            'v' => *current += Point::DOWN,
             _ => {}
         }
-        visited.insert((*x, *y));
+        visited.insert(*current);
     }
     visited.len()
 }
