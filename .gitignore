@@ -6,3 +6,4 @@ target
 input*.txt
 day??.txt
 .DS_Store
+inputs
