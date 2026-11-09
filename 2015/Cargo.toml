@@ -10,6 +10,7 @@ itertools = "0.14"
 pathfinding = "4"
 # Add only on the day it's needed — HiGHS is a slow C++ build:
 # good_lp = { version = "1.14", features = ["highs"], default-features = false }
+md5 = "0.7"
 
 # Keep debug builds fast to compile, but optimise dependencies.
 [profile.dev.package."*"]
