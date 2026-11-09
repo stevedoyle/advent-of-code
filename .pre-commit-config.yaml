@@ -34,3 +34,15 @@ repos:
     language: system
     files: ^2026/.*\.rs$
     pass_filenames: false
+  - id: cargo-fmt-2015
+    name: cargo fmt (2015)
+    entry: cargo fmt --manifest-path 2015/Cargo.toml
+    language: system
+    files: ^2015/.*\.rs$
+    pass_filenames: false
+  - id: cargo-clippy-2015
+    name: cargo clippy (2015)
+    entry: cargo clippy --manifest-path 2015/Cargo.toml --all-targets -- -D warnings
+    language: system
+    files: ^2015/.*\.rs$
+    pass_filenames: false

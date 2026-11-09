@@ -1,0 +1,16 @@
+[package]
+name = "aoc2015"
+version = "0.1.0"
+edition = "2024"
+
+# Day binaries are auto-discovered from src/bin/dayNN.rs — no [[bin]] entries needed.
+
+[dependencies]
+itertools = "0.14"
+pathfinding = "4"
+# Add only on the day it's needed — HiGHS is a slow C++ build:
+# good_lp = { version = "1.14", features = ["highs"], default-features = false }
+
+# Keep debug builds fast to compile, but optimise dependencies.
+[profile.dev.package."*"]
+opt-level = 3
